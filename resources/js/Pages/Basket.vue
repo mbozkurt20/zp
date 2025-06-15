@@ -47,7 +47,7 @@ onMounted(fetchProducts)
                                 <h1 class="font-semibold text-2xl">Alışveriş Sepeti</h1>
                                 <h2 class="font-semibold text-2xl">{{cartStore.totalProduct}} Ürün</h2>
                             </div>
-                            <div v-for="item in cartStore.cart" class="md:flex items-strech py-8 md:py-10 lg:py-8 border-t border-gray-50">
+                            <div v-for="item in cartStore.cart" class="border-b border-orange-200 md:flex items-strech py-8 md:py-10 lg:py-8 border-t">
 
                                 <div class="md:w-4/12 2xl:w-1/4 w-full">
                                     <img :src="`/storage/${item.image}`" alt="Black Leather Purse" class=" h-full object-center object-cover md:block hidden" />
@@ -55,14 +55,15 @@ onMounted(fetchProducts)
                                 </div>
                                 <div class="md:pl-3 md:w-8/12 2xl:w-3/4 flex flex-col justify-center">
                                     <!--p class="text-xs leading-3 text-gray-800 md:pt-0 pt-4">RF293</p-->
-                                    <div class="flex items-center justify-between w-full">
-                                        <p class="text-base font-black leading-none text-gray-800">{{item.name}}</p>
+                                    <div class="mx-auto text-center w-full">
+                                        <p class="text-base font-black leading-none text-gray-800 py-4">{{item.name}}</p>
+                                        <p class="text-sm font-black leading-none text-gray-500 pb-4">{{item.description}}</p>
 
-                                        <div class="font-semibold text-gray-500 mb-4">
-                                            Stok Durumu <br> {{ item.quantity }} {{ item.stock_type }}
+                                        <div class="font-semibold text-green-500 text-sm  mb-4">
+                                            Stok  {{ item.quantity > 0 ? 'Mevcut' : 'Gelince Haber Ver'}}
                                         </div>
 
-                                        <div class="flex gap-4 mt-4">
+                                        <div class="flex mx-auto justify-center gap-4 mt-4">
                                             <button
                                                 @click="cartStore.decreaseFromCart(item)"
                                                 class="px-3 py-1 bg-orange-500 text-white rounded hover:bg-orange-400"
@@ -77,8 +78,9 @@ onMounted(fetchProducts)
                                         </div>
                                     </div>
 
-                                    <p class="w-96 text-xs leading-3 text-gray-600">{{item.description}}</p>
+
                                 </div>
+
                             </div>
 
                             <Link class=" flex font-semibold text-indigo-600 text-sm mt-10" :href="route('dashboard')">
