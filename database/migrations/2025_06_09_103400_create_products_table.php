@@ -13,11 +13,12 @@ return new class extends Migration
     {
         Schema::create('products', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('category_id')->constrained('categories');
             $table->string('name');
             $table->string('slug')->unique();
             $table->string('image')->nullable();
             $table->json('images')->nullable();
-            $table->tinyText('description')->nullable();
+            $table->text('description')->nullable();
             $table->decimal('price', 8, 2)->nullable();
             $table->decimal('discount', 8, 2)->nullable();
             $table->decimal('tax', 8, 2)->nullable();

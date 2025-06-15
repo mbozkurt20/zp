@@ -2,6 +2,9 @@
 
 namespace App\Providers;
 
+use App\Models\Basket;
+use App\Observers\BasketObserver;
+use Filament\Facades\Filament;
 use Illuminate\Support\Facades\Vite;
 use Illuminate\Support\ServiceProvider;
 
@@ -21,5 +24,9 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Vite::prefetch(concurrency: 3);
+
+        Basket::observe(BasketObserver::class);
+
+
     }
 }

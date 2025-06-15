@@ -23,7 +23,7 @@ defineProps({
             <h2
                 class="text-xl font-semibold leading-tight text-gray-800"
             >
-                Profile
+                Profil Bilgileri
             </h2>
         </template>
 
@@ -45,11 +45,11 @@ defineProps({
                     <UpdatePasswordForm class="max-w-xl" />
                 </div>
 
-                <div
+                <!--div
                     class="bg-white p-4 shadow sm:rounded-lg sm:p-8"
                 >
                     <DeleteUserForm class="max-w-xl" />
-                </div>
+                </div-->
             </div>
         </div>
     </AuthenticatedLayout>

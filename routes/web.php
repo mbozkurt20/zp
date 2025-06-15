@@ -22,12 +22,19 @@ Route::get('/basket', function () {
     return Inertia::render('Basket');
 })->middleware(['auth', 'verified'])->name('basket');
 
+Route::get('/orders', function () {
+    return Inertia::render('Orders');
+})->middleware(['auth', 'verified'])->name('orders');
+
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
     Route::get('/products', [\App\Http\Controllers\BasketController::class, 'products']);
+    Route::get('/categories', [\App\Http\Controllers\BasketController::class, 'categories']);
+    Route::get('/order', [\App\Http\Controllers\BasketController::class, 'orders']);
+    Route::get('/cart', [\App\Http\Controllers\BasketController::class, 'getCart']);
     Route::post('/add-product', [\App\Http\Controllers\BasketController::class, 'addProduct']);
     Route::post('/remove-product', [\App\Http\Controllers\BasketController::class, 'removeProduct']);
 });

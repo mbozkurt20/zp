@@ -41,6 +41,12 @@ const showingNavigationDropdown = ref(false);
                                 >
                                     Ürünlerimiz
                                 </NavLink>
+                                <NavLink
+                                    :href="route('orders')"
+                                    :active="route().current('orders')"
+                                >
+                                    Sipariş Takibi
+                                </NavLink>
                             </div>
                         </div>
 
@@ -78,14 +84,14 @@ const showingNavigationDropdown = ref(false);
                                         <DropdownLink
                                             :href="route('profile.edit')"
                                         >
-                                            Profile
+                                            Profil
                                         </DropdownLink>
                                         <DropdownLink
                                             :href="route('logout')"
                                             method="post"
                                             as="button"
                                         >
-                                            Log Out
+                                           Çıkış Yap
                                         </DropdownLink>
                                     </template>
                                 </Dropdown>
@@ -150,6 +156,12 @@ const showingNavigationDropdown = ref(false);
                         >
                             Ürünlerimiz
                         </ResponsiveNavLink>
+                        <ResponsiveNavLink
+                            :href="route('orders')"
+                            :active="route().current('orders')"
+                        >
+                            Sipariş Takibi
+                        </ResponsiveNavLink>
                     </div>
 
                     <!-- Responsive Settings Options -->
@@ -176,7 +188,7 @@ const showingNavigationDropdown = ref(false);
                                 method="post"
                                 as="button"
                             >
-                                Log Out
+                                Çıkış Yap
                             </ResponsiveNavLink>
                         </div>
                     </div>

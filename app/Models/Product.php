@@ -19,10 +19,16 @@ class Product extends Model
         });
     }
 
+    public function category()
+    {
+        return $this->belongsTo(Category::class);
+    }
+
     protected $casts = [
         'images' => 'array',
     ];
     protected $fillable = [
+      'category_id',
       'name',
       'slug',
       'image',

@@ -8,6 +8,7 @@ import { Head, Link, useForm } from '@inertiajs/vue3';
 
 const form = useForm({
     name: '',
+    phone: '',
     email: '',
     password: '',
     password_confirmation: '',
@@ -26,7 +27,7 @@ const submit = () => {
 
         <form @submit.prevent="submit">
             <div>
-                <InputLabel for="name" value="Name" />
+                <InputLabel for="name" value="İsim Soyisim" />
 
                 <TextInput
                     id="name"
@@ -41,6 +42,20 @@ const submit = () => {
                 <InputError class="mt-2" :message="form.errors.name" />
             </div>
 
+            <div class="mt-4">
+                <InputLabel for="phone" value="Telefon Numarası" />
+
+                <TextInput
+                    id="phone"
+                    type="number"
+                    class="mt-1 block w-full"
+                    v-model="form.phone"
+                    required
+                    autocomplete="username"
+                />
+
+                <InputError class="mt-2" :message="form.errors.phone" />
+            </div>
             <div class="mt-4">
                 <InputLabel for="email" value="Email" />
 
@@ -57,7 +72,7 @@ const submit = () => {
             </div>
 
             <div class="mt-4">
-                <InputLabel for="password" value="Password" />
+                <InputLabel for="password" value="Şifre" />
 
                 <TextInput
                     id="password"
@@ -74,7 +89,7 @@ const submit = () => {
             <div class="mt-4">
                 <InputLabel
                     for="password_confirmation"
-                    value="Confirm Password"
+                    value="Şifre Tekrarı"
                 />
 
                 <TextInput
@@ -97,7 +112,7 @@ const submit = () => {
                     :href="route('login')"
                     class="rounded-md text-sm text-gray-600 underline hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
                 >
-                    Already registered?
+                    Hesabım zaten var
                 </Link>
 
                 <PrimaryButton
@@ -105,7 +120,7 @@ const submit = () => {
                     :class="{ 'opacity-25': form.processing }"
                     :disabled="form.processing"
                 >
-                    Register
+                    Hesap Aç
                 </PrimaryButton>
             </div>
         </form>

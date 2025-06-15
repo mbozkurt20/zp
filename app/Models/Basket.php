@@ -15,5 +15,19 @@ class Basket extends Model
         'is_shopping',
         'is_completed',
         'cart',
+        'payment_type',
     ];
+
+    public function basketItems(){
+        return $this->hasMany(BasketItem::class);
+    }
+
+    public function user(){
+        return $this->belongsTo(User::class);
+    }
+
+    public function order()
+    {
+        return $this->hasOne(Order::class);
+    }
 }

@@ -14,9 +14,10 @@ return new class extends Migration
         Schema::create('baskets', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained('users');
-            $table->boolean('is_shopping')->default(true); //alışveriş devam ediyor mu
-            $table->boolean('is_completed')->default(false); // işlem kapatıldı mı
+            $table->boolean('is_shopping'); //alışveriş devam ediyor mu
+            $table->boolean('is_completed'); // işlem kapatıldı mı
             $table->json('cart')->nullable();
+            $table->string('payment_type')->nullable();
             $table->timestamps();
             $table->softDeletes();
         });

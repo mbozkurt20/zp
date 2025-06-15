@@ -4,6 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\ProductResource\Pages;
 use App\Filament\Resources\ProductResource\RelationManagers;
+use App\Models\Category;
 use App\Models\Product;
 use Filament\Forms;
 use Filament\Forms\Components\FileUpload;
@@ -18,7 +19,14 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 class ProductResource extends Resource
 {
     protected static ?string $model = Product::class;
-
+    public static function getNavigationLabel(): string
+    {
+        return 'Ürünler';
+    }
+    public static function getPluralModelLabel(): string
+    {
+        return 'Ürünler';
+    }
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
     public static function form(Form $form): Form
@@ -50,13 +58,14 @@ class ProductResource extends Resource
                     ->label('İndirim Tutarı')
                     ->required(),
                 Forms\Components\Select::make('stock_type')->label('Stok Türü')->options([
-                    'kg' => 'Kilogram',
-                    'gram' => 'Gram',
-                    'litre' => 'Litre',
-                    'piece' => 'Adet',
+                    'Kilogram' => 'Kilogram',
+                    'Gram' => 'Gram',
+                    'Litre' => 'Litre',
+                    'Adet' => 'Adet',
                 ])->required(),
-                TextInput::make('quantity')->minValue(1)->numeric()->required(),
-                TextInput::make('warning_quantity')->numeric()->nullable(),
+                Forms\Components\Select::make('category_id')->label('Kategori')->options(Category::pluck('name','id'))->required(),
+                TextInput::make('quantity')->minValue(1)->label('Miktar')->numeric()->required(),
+                TextInput::make('warning_quantity')->label('Uyarı Miktarı')->numeric()->nullable(),
             ]);
     }
 
@@ -64,18 +73,19 @@ class ProductResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('name')->sortable()->searchable(),
+                Tables\Columns\TextColumn::make('category.name')->label('Kategori')->sortable()->searchable(),
+                Tables\Columns\TextColumn::make('name')->label('Ürün')->sortable()->searchable(),
                 Tables\Columns\TextColumn::make('price')->label('Fiyat')->money('TRY', true),
                 Tables\Columns\TextColumn::make('discount')->label('İndirim Tutarı')->money('TRY', true),
                 Tables\Columns\TextColumn::make('stock_type')->label('Stok Türü'),
-                Tables\Columns\TextColumn::make('quantity')->label('Adet'),
+                Tables\Columns\TextColumn::make('quantity')->label('Miktar'),
                 Tables\Columns\TextColumn::make('created_at')->dateTime()->label('Eklenme Tarihi'),
             ])
             ->filters([
                 //
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
+                Tables\Actions\EditAction::make()->label('Düzenle')->icon('heroicon-o-pencil'),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

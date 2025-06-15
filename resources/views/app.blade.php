@@ -18,4 +18,9 @@
     <body class="font-sans antialiased">
         @inertia
     </body>
+    <script>
+        window.Laravel = {
+            userId: {{ auth()->id() ?? 'null' }}
+        }
+    </script>
 </html>
