@@ -28,6 +28,7 @@ Route::get('/orders', function () {
 
 Route::get('/products', [\App\Http\Controllers\BasketController::class, 'products']);
 Route::get('/categories', [\App\Http\Controllers\BasketController::class, 'categories']);
+
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');

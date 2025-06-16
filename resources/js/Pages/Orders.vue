@@ -91,8 +91,8 @@ onMounted(() => {
                     </tbody>
                 </table>
 
-                <div class="bg-white border border-white h-32 rounded-lg shadow mx-auto my-auto" v-else>
-                    <h4 class="text-2xl text-gray-500 text-center py-4">Sipariş Bulunmuyor...</h4>
+                <div v-else class="bg-orange-500 h-32 rounded-lg" >
+                    <h5 class="text-white text-3xl font-bold mx-auto text-center py-5">Sipariş Bulunmamaktadır...</h5>
                 </div>
             </div>
 

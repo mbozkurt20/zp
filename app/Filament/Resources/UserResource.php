@@ -6,6 +6,8 @@ use App\Filament\Resources\UserResource\Pages;
 use App\Filament\Resources\UserResource\RelationManagers;
 use App\Models\User;
 use Filament\Forms;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
@@ -30,7 +32,11 @@ class UserResource extends Resource
     {
         return $form
             ->schema([
-
+                TextInput::make('name')->label('İsim Soyisim')->required(),
+                TextInput::make('phone')->label('Telefon')->required(),
+                TextInput::make('email')->label('Email')->required(),
+                TextInput::make('password')->label('Şifre')->required(),
+                Textarea::make('address')->label('Adres')->nullable(),
             ]);
     }
 
@@ -41,7 +47,7 @@ class UserResource extends Resource
                Tables\Columns\TextColumn::make('name')->label('İsim Soyisim')->sortable()->searchable(),
                 TABLEs\Columns\TextColumn::make('phone')->label('Telefon')->sortable()->searchable(),
                 TABLEs\Columns\TextColumn::make('email')->label('E-posta')->sortable()->searchable(),
-                TABLEs\Columns\TextColumn::make('address')->label('Adres')->sortable()->searchable(),
+                TABLEs\Columns\TextColumn::make('phone')->label('Telefon')->sortable()->searchable(),
             ])
             ->filters([
                 //

@@ -73,7 +73,7 @@ const filteredProducts = (category) => {
 
         <div class="py-12 ">
             <div class="mx-auto max-w-7xl px-6 sm:px-6 lg:px-8">
-                <div v-for="category in categories" :key="category.id"
+                <div v-if="categories.length" v-for="category in categories" :key="category.id"
                      class="mb-10 overflow-hidden bg-white shadow-xl rounded-2xl">
                     <div class="grid grid-cols-2 px-3 py-8">
                         <h4 class=" text-2xl text-orange-500 pl-8 font-bold ">
@@ -131,6 +131,9 @@ const filteredProducts = (category) => {
                             </div>
                         </div>
                     </div>
+                </div>
+                <div v-else class="bg-orange-500 h-32 rounded-lg" >
+                    <h5 class="text-white text-3xl font-bold mx-auto text-center py-5">Ürünler Bulunmamaktadır...</h5>
                 </div>
             </div>
         </div>

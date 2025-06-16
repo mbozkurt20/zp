@@ -45,7 +45,7 @@ class ProductResource extends Resource
                     ->enableOpen()
                     ->nullable()
                     ->acceptedFileTypes(['image/jpeg','image/jpg', 'image/webp','image/avif','image/png', 'application/pdf']),
-                TextInput::make('barcode')->nullable(),
+                TextInput::make('barcode')->label('Barkod')->nullable(),
                 TextInput::make('name')->label('Ürün Adı')->required(),
                 Forms\Components\Textarea::make('description')->label('Ürün Açıklaması')->required(),
                 TextInput::make('price')
