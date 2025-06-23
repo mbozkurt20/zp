@@ -12,6 +12,7 @@ use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Tables\Actions\Action;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
@@ -43,6 +44,7 @@ class OrderResource extends Resource
         return $table
             ->columns([
                Tables\Columns\TextColumn::make('id')->label('Sipariş No')->sortable()->searchable(),
+               Tables\Columns\TextColumn::make('barcode')->label('Barkod')->sortable()->searchable(),
                Tables\Columns\TextColumn::make('creator.name')->label('Ödeme Alan Kişi')->sortable()->searchable(),
                 Tables\Columns\TextColumn::make('user.name')->label('Müşteri'),
                 Tables\Columns\TextColumn::make('total')->label('Toplam Tutar'),
@@ -54,7 +56,7 @@ class OrderResource extends Resource
             ])
             ->actions([
                 Tables\Actions\Action::make('markAsReady')
-                    ->label('Hazır Olarak İşaretle')
+                    ->label('Hazırlandı Yap')
                     ->requiresConfirmation()
                     ->color('success')
                     ->icon('heroicon-o-check')
@@ -69,6 +71,20 @@ class OrderResource extends Resource
                         Pusher::trigger('orders-channel','orders-event', $orders);
                     })
                     ->visible(fn ($record) => !$record->is_ready),
+
+                Action::make('Print')
+                    ->label('Barkod Yazdır')
+                    ->icon('heroicon-o-printer')
+                    ->color('success')
+                    ->url(fn ($record) => route('barcode.order.print', $record))
+                    ->openUrlInNewTab(),
+
+                Action::make('Print')
+                    ->label('Fiş Yazdır')
+                    ->icon('heroicon-o-printer')
+                    ->color('warning')
+                    ->url(fn ($record) => route('barcode.receipt.order.print', $record))
+                    ->openUrlInNewTab(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

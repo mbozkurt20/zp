@@ -76,7 +76,7 @@ class BasketResource extends Resource
             ])
             ->actions([
                 Tables\Actions\EditAction::make()
-                    ->label('Ödeme Yap')->icon('heroicon-o-pencil'),
+                    ->label('Ödeme Yap')->color('success')->icon('heroicon-o-pencil'),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

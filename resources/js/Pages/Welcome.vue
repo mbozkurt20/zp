@@ -62,6 +62,7 @@ const filteredProducts = (category) => {
 
 <template>
     <Head title="Hoşgeldiniz" />
+
     <div class="bg-gray-50 text-black/50 dark:bg-black dark:text-white/50">
         <img
             id="background"
@@ -72,23 +73,25 @@ const filteredProducts = (category) => {
             class="relative flex min-h-screen flex-col items-center justify-center selection:bg-[#FF2D20] selection:text-white"
         >
             <div class="relative w-full max-w-2xl px-6 lg:max-w-7xl">
-                <header
-                    class="grid grid-cols-2 items-center gap-2 py-10 lg:grid-cols-3"
-                >
 
-                    <nav v-if="canLogin" class="-mx-3 flex flex-1 justify-end">
+                <header class="flex flex-col gap-4 py-6 sm:flex-row sm:justify-between sm:items-center">
+                    <div class="flex-1">
+                        <!-- Logonuz veya başlık buraya gelebilir -->
+                    </div>
+
+                    <nav v-if="canLogin" class="flex flex-col sm:flex-row gap-2 sm:gap-4 w-full sm:w-auto justify-end">
                         <Link
                             v-if="$page.props.auth.user"
                             :href="route('dashboard')"
-                            class="rounded-md  text-xl px-3 py-2 text-black ring-1 ring-transparent transition hover:text-black/70 focus:outline-none focus-visible:ring-[#FF2D20] dark:text-white dark:hover:text-white/80 dark:focus-visible:ring-white"
+                            class="w-full sm:w-auto text-center rounded-md text-xl px-4 text-lg py-2 text-black ring-1 ring-transparent transition hover:text-black/70 focus:outline-none focus-visible:ring-[#FF2D20] dark:text-white dark:hover:text-white/80 dark:focus-visible:ring-white"
                         >
-                            -> Satın Almaya Git
+                            → Satın Almaya Git
                         </Link>
 
                         <template v-else>
                             <Link
                                 :href="route('login')"
-                                class="rounded-md px-3 py-2 text-black ring-1 ring-transparent transition hover:text-black/70 focus:outline-none focus-visible:ring-[#FF2D20] dark:text-white dark:hover:text-white/80 dark:focus-visible:ring-white"
+                                class="w-full sm:w-auto text-center rounded-md px-4  text-lg py-2 text-black ring-1 ring-transparent transition hover:text-black/70 focus:outline-none focus-visible:ring-[#FF2D20] dark:text-white dark:hover:text-white/80 dark:focus-visible:ring-white"
                             >
                                 Giriş Yap
                             </Link>
@@ -96,13 +99,14 @@ const filteredProducts = (category) => {
                             <Link
                                 v-if="canRegister"
                                 :href="route('register')"
-                                class="rounded-md px-3 py-2 text-black ring-1 ring-transparent transition hover:text-black/70 focus:outline-none focus-visible:ring-[#FF2D20] dark:text-white dark:hover:text-white/80 dark:focus-visible:ring-white"
+                                class="w-full sm:w-auto text-center rounded-md px-4 py-2 text-lg text-black ring-1 ring-transparent transition hover:text-black/70 focus:outline-none focus-visible:ring-[#FF2D20] dark:text-white dark:hover:text-white/80 dark:focus-visible:ring-white"
                             >
                                 Hesap Aç
                             </Link>
                         </template>
                     </nav>
                 </header>
+
 
                 <main class="mt-6">
                     <div class="mx-auto max-w-7xl px-6 sm:px-6 lg:px-8">
@@ -144,6 +148,10 @@ const filteredProducts = (category) => {
 
                                         <div class="font-semibold text-green-500 text-sm  mb-4">
                                             Stok  {{ product.quantity > 0 ? 'Mevcut' : 'Gelince Haber Ver'}}
+                                        </div>
+
+                                        <div class="py-5">
+                                            <img :src="`https://barcode.tec-it.com/barcode.ashx?data=${product.barcode}&code=Code128&translate-esc=false&text=false`" />
                                         </div>
 
                                         <div class="flex items-center justify-center gap-4 mt-auto">

@@ -1,9 +1,12 @@
 <?php
 
 use App\Http\Controllers\ProfileController;
+use App\Models\Product;
 use Illuminate\Foundation\Application;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
+use Picqer\Barcode\BarcodeGeneratorPNG;
 
 Route::get('/', function () {
     return Inertia::render('Welcome', [
@@ -40,5 +43,24 @@ Route::middleware('auth')->group(function () {
     Route::post('/add-product', [\App\Http\Controllers\BasketController::class, 'addProduct']);
     Route::post('/remove-product', [\App\Http\Controllers\BasketController::class, 'removeProduct']);
 });
+
+Route::get('barcode/print/{order}',function (\App\Models\Order $order){
+    return view('barcode.order-print', compact('order'));
+})->name('barcode.order.print');
+
+Route::get('receipt/print/{order}',function (\App\Models\Order $order){
+    return view('barcode.receipt-order-print', compact('order'));
+})->name('barcode.receipt.order.print');
+
+Route::get('barcode/print/{product}',function (\App\Models\Product $product){
+    return view('barcode.product-print', compact('product'));
+})->name('barcode.print');
+
+Route::get('barcode/bulk-print',function (Request $request){
+    $ids = explode(',', $request->input('ids'));
+    $products = Product::whereIn('id', $ids)->get();
+
+    return view('barcode.product-bulk-print', compact('products'));
+})->name('barcode.bulk.print');
 
 require __DIR__.'/auth.php';

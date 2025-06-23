@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('products', function (Blueprint $table) {
             $table->id();
             $table->foreignId('category_id')->constrained('categories');
+            $table->string('barcode');
             $table->string('name');
             $table->string('slug')->unique();
             $table->string('image')->nullable();
@@ -23,7 +24,7 @@ return new class extends Migration
             $table->decimal('discount', 8, 2)->nullable();
             $table->decimal('tax', 8, 2)->nullable();
             $table->tinyText('qr_code')->nullable();
-            $table->tinyText('barcode')->nullable();
+
             $table->string('stock_type')->nullable();
             $table->integer('quantity')->nullable();
             $table->integer('warning_quantity')->nullable();

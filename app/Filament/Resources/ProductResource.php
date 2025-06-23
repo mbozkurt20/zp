@@ -3,7 +3,6 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\ProductResource\Pages;
-use App\Filament\Resources\ProductResource\RelationManagers;
 use App\Models\Category;
 use App\Models\Product;
 use Filament\Forms;
@@ -12,9 +11,12 @@ use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Tables\Actions\BulkAction;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Filament\Tables\Actions\Action;
+use Illuminate\Support\Collection;
 
 class ProductResource extends Resource
 {
@@ -45,7 +47,6 @@ class ProductResource extends Resource
                     ->enableOpen()
                     ->nullable()
                     ->acceptedFileTypes(['image/jpeg','image/jpg', 'image/webp','image/avif','image/png', 'application/pdf']),
-                TextInput::make('barcode')->label('Barkod')->nullable(),
                 TextInput::make('name')->label('Ürün Adı')->required(),
                 Forms\Components\Textarea::make('description')->label('Ürün Açıklaması')->required(),
                 TextInput::make('price')
@@ -73,6 +74,7 @@ class ProductResource extends Resource
     {
         return $table
             ->columns([
+                Tables\Columns\TextColumn::make('barcode')->label('Barkod')->sortable()->searchable(),
                 Tables\Columns\TextColumn::make('category.name')->label('Kategori')->sortable()->searchable(),
                 Tables\Columns\TextColumn::make('name')->label('Ürün')->sortable()->searchable(),
                 Tables\Columns\TextColumn::make('price')->label('Fiyat')->money('TRY', true),
@@ -86,11 +88,24 @@ class ProductResource extends Resource
             ])
             ->actions([
                 Tables\Actions\EditAction::make()->label('Düzenle')->icon('heroicon-o-pencil'),
+                Action::make('Print')
+                    ->label('Barkod Yazdır')
+                    ->icon('heroicon-o-printer')
+                    ->color('success')
+                    ->url(fn ($record) => route('barcode.print', $record))
+                    ->openUrlInNewTab(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
+                BulkAction::make('bulkPrint')
+                    ->label('Toplu Yazdır')
+                    ->icon('heroicon-o-printer')
+                    ->color('success')
+                    ->action(fn (Collection $records) => redirect()->route('barcode.bulk.print', [
+                        'ids' => $records->pluck('id')->join(','),
+                    ])),
             ]);
     }
 

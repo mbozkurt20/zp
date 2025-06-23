@@ -112,7 +112,9 @@ const filteredProducts = (category) => {
                                 <div class="font-semibold text-green-500 text-sm  mb-4">
                                     Stok  {{ product.quantity > 0 ? 'Mevcut' : 'Gelince Haber Ver'}}
                                 </div>
-
+                                <div class="py-5">
+                                    <img :src="`https://barcode.tec-it.com/barcode.ashx?data=${product.barcode}&code=Code128&translate-esc=false&text=false`" />
+                                </div>
                                 <div class="flex items-center justify-center gap-4 mt-auto">
                                     <button
                                         @click="cartStore.decreaseFromCart(product)"

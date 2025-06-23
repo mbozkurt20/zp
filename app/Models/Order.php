@@ -16,6 +16,7 @@ class Order extends Model
     ];
     protected $fillable = [
         'creator_id',
+        'barcode',
         'user_id',
         'basket_id',
         'discount',

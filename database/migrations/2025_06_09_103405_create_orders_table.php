@@ -16,6 +16,7 @@ return new class extends Migration
             $table->foreignId('creator_id')->constrained('users');
             $table->foreignId('user_id')->constrained('users');
             $table->foreignId('basket_id')->constrained('baskets');
+            $table->string('barcode')->unique();
             $table->decimal('total', 10, 2);
             $table->decimal('discount', 10, 2)->default(0);
             $table->integer('tax')->nullable();
