@@ -99,7 +99,7 @@ class OrderResource extends Resource
                             $records->each(function ($record) {
                                 if (!$record->is_ready) {
                                     $record->is_ready = true;
-                                    $record->ready_date = \Carbon\Carbon::now(); // Tarihi ayarla
+                                    $record->ready_date = \Carbon\Carbon::now();
                                     $record->save();
                                 }
                             });

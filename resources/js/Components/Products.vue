@@ -3,6 +3,7 @@ import { Head, Link } from '@inertiajs/vue3';
 import {onMounted, reactive, ref} from "vue";
 import axios from "axios";
 import {useCartStore} from '../Stores/cartStore'
+import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 
 defineProps({
     canLogin: {
@@ -179,7 +180,7 @@ const filteredProducts = (category) => {
                 <footer
                     class="py-16 text-center text-sm text-black dark:text-white/70"
                 >
-                   Copyright (c) Tüm Haklara Saklıdır 2025
+                    Copyright (c) Tüm Haklara Saklıdır 2025
                 </footer>
             </div>
         </div>

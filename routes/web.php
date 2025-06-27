@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ProfileController;
+use App\Models\Order;
 use App\Models\Product;
 use Illuminate\Foundation\Application;
 use Illuminate\Http\Request;
@@ -42,6 +43,106 @@ Route::middleware('auth')->group(function () {
     Route::get('/cart', [\App\Http\Controllers\BasketController::class, 'getCart']);
     Route::post('/add-product', [\App\Http\Controllers\BasketController::class, 'addProduct']);
     Route::post('/remove-product', [\App\Http\Controllers\BasketController::class, 'removeProduct']);
+
+
+    Route::post('/scan-product', function (Request $request) {
+        $barcode = $request->barcode;
+        $quantity = max(1, (int) $request->quantity);
+
+        $product = Product::where('barcode', $barcode)->first();
+
+        if (!$product) {
+            return response()->json(['message' => 'Ürün Bulunamadı'], 404);
+        }
+
+        $cart = session('cart', []);
+        $existingIndex = collect($cart)->search(fn($item) => $item['id'] === $product->id);
+
+        if ($existingIndex !== false) {
+            $cart[$existingIndex]['quantity'] += $quantity;
+        } else {
+            $cart[] = [
+                'id' => $product->id,
+                'tax' => $product->tax,
+                'name' => $product->name,
+                'image' => $product->image,
+                'price' => $product->price,
+                'barcode' => $product->barcode,
+                'qr_code' => $product->qr_code,
+                'discount' => $product->discount,
+                'quantity' => $quantity,
+                'created_at' => $product->discount,
+                'stock_type' => $product->discount,
+                'category_id' => $product->discount,
+                'description' => $product->discount,
+                'category_name' => $product->discount,
+                'warning_quantity' => $product->warning_quantity,
+            ];
+        }
+
+        session(['cart' => $cart]);
+        return response()->json(['cart' => $cart]);
+    });
+
+    Route::post('/update-cart-quantity', function (Request $request) {
+        $cart = session('cart', []);
+        if (isset($cart[$request->index])) {
+            $cart[$request->index]['quantity'] = max(1, (int) $request->quantity);
+        }
+        session(['cart' => $cart]);
+        return response()->json(['cart' => $cart]);
+    });
+
+    Route::post('/remove-from-cart', function (Request $request) {
+        $cart = session('cart', []);
+        unset($cart[$request->index]);
+        $cart = array_values($cart);
+        session(['cart' => $cart]);
+        return response()->json(['cart' => $cart]);
+    });
+
+    Route::post('/checkout', function (Request $request) {
+        $cart = $request->cart;
+        $payment = $request->payment;
+
+        $basket = \App\Models\Basket::create([
+            'user_id' => auth()->id(),
+            'is_shopping' => 0,
+            'is_completed' => 1,
+            'cart' => json_encode($cart),
+            'payment_type' => $payment,
+        ]);
+
+        $total = 0;
+        foreach ($cart as $item) {
+            $total += $item['quantity'] * $item['price'];
+
+            \App\Models\BasketItem::create([
+                'basket_id' => $basket->id,
+                'product_id' => $item['id'],
+                'quantity' => $item['quantity'],
+            ]);
+        }
+
+        $barcode = 'o-' . rand(100000000, 999999999);
+
+        if (Order::where('barcode', $barcode)->exists()) {
+            $barcode = 'o-' . rand(100000000, 999999999);
+        }
+
+        \App\Models\Order::create([
+            'creator_id' => auth()->id(),
+            'user_id' => auth()->id(),
+            'basket_id' => $basket->id,
+            'barocde' => $barcode,
+            'total' => $total,
+            'is_paid' => 1,
+            'is_ready' => 0,
+        ]);
+
+        session()->forget('cart');
+        return response()->json(['message' => 'Satış Tamamlandı!']);
+    });
 });
 
 Route::get('barcode/print/{order}',function (\App\Models\Order $order){
