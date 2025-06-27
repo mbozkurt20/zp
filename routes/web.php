@@ -145,17 +145,20 @@ Route::middleware('auth')->group(function () {
     });
 });
 
-Route::get('barcode/print/{order}',function (\App\Models\Order $order){
+Route::get('barcode/print/product/{product}',function (\App\Models\Product $product){
+    return view('barcode.product-print', compact('product'));
+})->name('barcode.print');
+
+Route::get('barcode/print/order/{order}',function (\App\Models\Order $order){
     return view('barcode.order-print', compact('order'));
 })->name('barcode.order.print');
+
 
 Route::get('receipt/print/{order}',function (\App\Models\Order $order){
     return view('barcode.receipt-order-print', compact('order'));
 })->name('barcode.receipt.order.print');
 
-Route::get('barcode/print/{product}',function (\App\Models\Product $product){
-    return view('barcode.product-print', compact('product'));
-})->name('barcode.print');
+
 
 Route::get('barcode/bulk-print',function (Request $request){
     $ids = explode(',', $request->input('ids'));
