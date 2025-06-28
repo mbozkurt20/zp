@@ -56,7 +56,7 @@ class OrderResource extends Resource
             ])
             ->actions([
                 Tables\Actions\Action::make('markAsReady')
-                    ->label('Hazırlandı Yap')
+                    ->label('Tamamlandı')
                     ->requiresConfirmation()
                     ->color('success')
                     ->icon('heroicon-o-check')

@@ -22,6 +22,25 @@ class BasketController extends Controller
         $products = Product::all();
         return response()->json(['data' => new ProductCollection($products)]);
     }
+
+    public function activeBasket(){
+        $activeBasket = Basket::where('user_id',\Illuminate\Support\Facades\Auth::id())
+            ->where('is_shopping',true)
+            ->where('is_completed',false)
+            ->select('id','cart')
+            ->first();
+
+        return response()->json(['cart' => json_decode($activeBasket->cart)]);
+    }
+
+    public function isCheckout($id){
+        $basket = Basket::find($id);
+
+        $basket->is_checkout = !$basket->is_checkout;
+        $basket->update();
+
+        return response()->json(['data' => $basket,'message' => 'Siparişleriniz Hazırlanıyor...']);
+    }
     public function orders()
     {
         $orders = Order::whereDate('created_at',Carbon::today())->orderByDesc('is_ready')->get();

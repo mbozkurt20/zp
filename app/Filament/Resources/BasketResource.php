@@ -58,7 +58,7 @@ class BasketResource extends Resource
     {
         return $table
             ->query(
-                static::getModel()::query()->where('is_completed', false)
+                static::getModel()::query()->where('is_checkout', true)->where('is_completed', false)
             )
             ->columns([
                 Tables\Columns\TextColumn::make('id')->label('ID')->sortable()->searchable(),
@@ -76,7 +76,7 @@ class BasketResource extends Resource
             ])
             ->actions([
                 Tables\Actions\EditAction::make()
-                    ->label('Ödeme Yap')->color('success')->icon('heroicon-o-pencil'),
+                    ->label('Ödeme Al')->color('success')->icon('heroicon-o-pencil'),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

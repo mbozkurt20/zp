@@ -7,6 +7,7 @@ import { Head } from '@inertiajs/vue3';
 
 import { Link } from '@inertiajs/vue3';
 import ApplicationLogo from "@/Components/ApplicationLogo.vue";
+import {toast} from "vue3-toastify";
 const products = ref([])
 const cartStore = useCartStore()
 
@@ -16,6 +17,17 @@ const fetchProducts = async () => {
     products.value = response.data.data
 }
 
+const props = defineProps(['activeBasket'])
+
+const isCheckout = (id) => {
+    axios.get(`/checkout/basket/${id}`).then(res => {
+        console.log({sa:res})
+        props.activeBasket.is_checkout = res.data.data.is_checkout;
+        toast.success('Siparişiniz Hazırlanıyor...')
+    }).catch(err => {
+        console.log({err:err})
+    })
+}
 onMounted(fetchProducts)
 </script>
 
@@ -83,6 +95,10 @@ onMounted(fetchProducts)
 
                             </div>
 
+                            <div class="bg-gray-50 py-5 w-auto" v-if="!cartStore.totalProduct">
+                                <p class="text-center mx-auto text-gray-500">Sepette Ürün Bulunmuyor...</p>
+                            </div>
+
                             <Link class=" flex font-semibold text-indigo-600 text-sm mt-10" :href="route('dashboard')">
                                 <svg class="fill-current mr-2 text-indigo-600 w-4" viewBox="0 0 448 512">
                                     <path
@@ -112,7 +128,22 @@ onMounted(fetchProducts)
                                     <span class="text-lg">{{cartStore.totalAmount}}₺</span>
                                 </div>
 
-                                <h5 class="text-orange-500 text-2xl mx-auto text-center mt-5">[ Ödeme için Kasaya Gidiniz... ]</h5>
+
+                                <div v-if="cartStore.totalProduct">
+                                    <div v-if="activeBasket && !activeBasket.is_checkout" class="pt-24">
+                                        <h5 class="text-white bg-green-500 rounded-xl py-2 cursor-pointer hover:bg-green-400 text-2xl mx-auto text-center mt-5">
+                                            <a @click="isCheckout(activeBasket.id)"> Alışverişi Tamamla</a>
+                                        </h5>
+                                    </div>
+
+                                    <div v-else disabled="" class="pt-24">
+                                        <p class="text-gray-600 text-lg">Siparişleriniz Hazırlanıyor...</p>
+                                        <h5 class="text-white bg-orange-500 hover:bg-orange-400 rounded-xl py-2 cursor-pointer text-2xl mx-auto text-center mt-5">
+                                            <a @click="isCheckout(activeBasket.id)"> Alışverişe Devam Et </a>
+                                        </h5>
+                                    </div>
+                                </div>
+
 
                                 <!--button class="bg-indigo-500 font-semibold hover:bg-indigo-600 py-3 text-sm text-white uppercase w-full">
                                     Checkout

@@ -88,7 +88,7 @@
 </div>
 
 <div class="footer">
-    <img src="https://barcode.tec-it.com/barcode.ashx?data={{ $order->barcode }}&code=Code128&translate-esc=false&text=false" alt="Barkod" />
+    <img src="https://bwipjs-api.metafloor.com/?bcid=code128&text={{ $order->barcode }}&includetext=false&scaleX=3&scaleY=0.8" alt="Barcode">
 </div>
 
 </body>

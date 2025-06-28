@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ProfileController;
+use App\Models\Basket;
 use App\Models\Order;
 use App\Models\Product;
 use Illuminate\Foundation\Application;
@@ -18,12 +19,34 @@ Route::get('/', function () {
     ]);
 })->name('welcome');
 
+Route::get('/category/{id}', function ($id) {
+    $products = Product::where('category_id', $id)->get();
+
+    return Inertia::render('Products', [
+        'products' => $products,
+        'canLogin' => Route::has('login'),
+        'canRegister' => Route::has('register'),
+        'laravelVersion' => Application::VERSION,
+        'phpVersion' => PHP_VERSION,
+    ]);
+})->name('products');
+
 Route::get('/dashboard', function () {
+
+
     return Inertia::render('Dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::get('/basket', function () {
-    return Inertia::render('Basket');
+    $activeBasket = Basket::where('user_id',\Illuminate\Support\Facades\Auth::id())
+        ->where('is_shopping',true)
+        ->where('is_completed',false)
+        ->select('id','is_checkout')
+        ->first();
+
+    return Inertia::render('Basket',[
+        'activeBasket' => $activeBasket,
+    ]);
 })->middleware(['auth', 'verified'])->name('basket');
 
 Route::get('/orders', function () {
@@ -38,12 +61,13 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
-
     Route::get('/order', [\App\Http\Controllers\BasketController::class, 'orders']);
     Route::get('/cart', [\App\Http\Controllers\BasketController::class, 'getCart']);
     Route::post('/add-product', [\App\Http\Controllers\BasketController::class, 'addProduct']);
     Route::post('/remove-product', [\App\Http\Controllers\BasketController::class, 'removeProduct']);
 
+    Route::get('/checkout/basket/{id}', [\App\Http\Controllers\BasketController::class, 'isCheckout']);
+    Route::get('/active/basket/', [\App\Http\Controllers\BasketController::class, 'activeBasket']);
 
     Route::post('/scan-product', function (Request $request) {
         $barcode = $request->barcode;

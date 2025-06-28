@@ -16,7 +16,9 @@
 <body onload="window.print();">
 
 
-<img src="https://barcode.tec-it.com/barcode.ashx?data={{ $product->barcode }}&code=Code128&translate-esc=false&text=false" alt="Barcode" />
+<img src="https://bwipjs-api.metafloor.com/?bcid=code128&text={{ $product->barcode }}&includetext=false&scaleX=3&scaleY=0.8" alt="Barcode">
+
+
 
 </body>
 </html>

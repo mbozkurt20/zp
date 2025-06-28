@@ -151,7 +151,7 @@ const filteredProducts = (category) => {
                                         </div>
 
                                         <div class="py-5">
-                                            <img :src="`https://barcode.tec-it.com/barcode.ashx?data=${product.barcode}&code=Code128&translate-esc=false&text=false`" />
+                                            <img :src="`https://bwipjs-api.metafloor.com/?bcid=code128&text=${product.barcode}&includetext=false&scaleX=3&scaleY=0.8`" alt="Barcode">
                                         </div>
 
                                         <div class="flex items-center justify-center gap-4 mt-auto">

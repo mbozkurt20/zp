@@ -13,6 +13,7 @@ class Basket extends Model
     protected $fillable = [
         'user_id',
         'is_shopping',
+        'is_checkout',
         'is_completed',
         'cart',
         'payment_type',

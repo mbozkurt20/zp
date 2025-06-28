@@ -61,6 +61,18 @@ export const useCartStore = defineStore('cart', () => {
             }
         }
     }
+    const loadCart = async () => {
+        try {
+            const res = await axios.get('/active/basket')
+
+            console.log({carttt:res})
+            if (res.data?.cart) {
+                cart.value = res.data.cart
+            }
+        } catch (error) {
+            console.error('Sepet yüklenirken hata oluştu:', error)
+        }
+    }
 
     const clearCart = () => {
         cart.value = {}
@@ -78,6 +90,8 @@ export const useCartStore = defineStore('cart', () => {
         Object.values(cart.value).reduce((sum, item) => sum + item.quantity * item.price, 0)
     )
 
+    loadCart()
+
     return {
         cart,
         addToCart,
@@ -85,6 +99,7 @@ export const useCartStore = defineStore('cart', () => {
         clearCart,
         totalItems,
         totalAmount,
-        totalProduct
+        totalProduct,
+        loadCart
     }
 })

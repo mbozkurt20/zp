@@ -55,6 +55,8 @@ class BasketObserver
         }
     }
 
+    public function updating(Basket $basket){
+    }
 
     /**
      * Handle the Basket "deleted" event.

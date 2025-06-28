@@ -23,59 +23,57 @@
         }
 
         .title {
-            display: flex;
-            justify-content: space-between;
             width: 100%;
             margin-bottom: 30px;
         }
 
-        .title h5, .title h4 {
-            margin: 0;
-        }
-
-        .title h5 {
-            text-align: left;
-        }
-
         .title h4 {
-            text-align: right;
+            margin-bottom: 5px;
         }
 
         .body {
             flex-grow: 1;
             display: flex;
             flex-direction: column;
-            justify-content: center;
+            margin-top: 15px;
             gap: 10px;
         }
 
         .footer {
             margin-top: auto;
+            text-align: center;
         }
 
         img {
-            width: 300px;
+            width: 200px;
             height: auto;
+            margin-top: 10px;
         }
     </style>
 </head>
 <body onload="window.print();">
 
 <div class="title">
+    <h4>Müşteri: {{ $order->user->name }} {{ $order->user->surname }}</h4>
+    <h4>Telefon: {{ $order->user->phone }}</h4>
     <h4>Sipariş No: {{ $order->id }}</h4>
-    <h4>Müşteri: {{ $order->user->name }}</h4>
 </div>
 
 <div class="body">
     <h2>Sipariş İçerikleri</h2>
     <br>
     @foreach($order->basket->basketItems as $item)
-        <h4>{{ $item->product->name }} * {{ $item->quantity }} {{$item->product->stock_type}}</h4>
+        <h4>{{ $item->product->name }} * {{ $item->quantity }} {{ $item->product->stock_type }}</h4>
     @endforeach
 </div>
 
 <div class="footer">
-    <img src="https://barcode.tec-it.com/barcode.ashx?data={{ $order->barcode }}&code=Code128&translate-esc=false&text=false" alt="Barcode" />
+    <img style="height: 5vh;width: 5vw"  src="/images/logo.png" alt="Logo">
+    <br>
+    <br>
+    <p class="font-bold">Bizi tercih ettiğiniz için teşekkür ederiz.</p>
+    <p>emisof.com.tr</p>
+
 </div>
 
 </body>
