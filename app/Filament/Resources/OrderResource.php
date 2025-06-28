@@ -56,10 +56,10 @@ class OrderResource extends Resource
             ])
             ->actions([
                 Tables\Actions\Action::make('markAsReady')
-                    ->label('Tamamlandı')
+                    ->label('Tamamlandı Yap')
                     ->requiresConfirmation()
-                    ->color('success')
-                    ->icon('heroicon-o-check')
+                    ->color('gray')
+                    ->icon('heroicon-o-pencil')
                     ->action(function ($record) {
                         $record->is_ready = true;
                         $record->ready_date = \Carbon\Carbon::now(); // Tarihi ayarla

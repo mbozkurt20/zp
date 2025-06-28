@@ -42,7 +42,7 @@ const fetchProducts = async () => {
 
 const fetchCategories = async () => {
     const response = await axios.get('/categories');
-    categories.value = response.data.data
+    categories.value = response.data.data ?? []
 }
 
 onMounted(() => {
@@ -61,32 +61,30 @@ const filteredProducts = (category) => {
 
 <template>
     <Head title="Hoşgeldiniz" />
-
     <header
-        class="sticky top-0 z-50 bg-white/80 backdrop-blur-md shadow-md flex flex-col gap-4 py-4 sm:flex-row sm:justify-between sm:items-center px-4 "
+        class="sticky top-0 z-50 bg-white/90 backdrop-blur shadow flex flex-col sm:flex-row sm:items-center sm:justify-between px-6 py-3"
     >
-        <div class="flex-1">
-            <h1 class="text-2xl font-bold text-black text-gray-600">
-                🛒 Emisoft Menü
-            </h1>
+        <div class="flex items-center gap-2">
+            <span class="text-3xl">🛒</span>
+            <h1 class="text-xl font-semibold text-gray-800">Emisoft Menü</h1>
         </div>
 
         <nav
             v-if="canLogin"
-            class="flex flex-col sm:flex-row gap-2 sm:gap-4 w-full sm:w-auto justify-end"
+            class="flex flex-col sm:flex-row gap-2 mt-2 sm:mt-0"
         >
             <Link
                 v-if="$page.props.auth.user"
                 :href="route('dashboard')"
-                class="text-lg px-4 py-2 text-gray-700 transition "
+                class="px-4 py-2 rounded-md text-gray-700 hover:bg-gray-100 transition"
             >
-              Satın Almaya Git
+                Satın Almaya Git
             </Link>
 
             <template v-else>
                 <Link
                     :href="route('login')"
-                    class="w-full sm:w-auto text-center rounded-md px-4 py-2 text-lg text-black bg-orange-400 hover:bg-orange-500 transition dark:text-white"
+                    class="px-4 py-2 rounded-md bg-orange-500 text-white hover:bg-orange-600 transition text-center"
                 >
                     Giriş Yap
                 </Link>
@@ -94,7 +92,7 @@ const filteredProducts = (category) => {
                 <Link
                     v-if="canRegister"
                     :href="route('register')"
-                    class="w-full sm:w-auto text-center rounded-md px-4 py-2 text-lg text-black bg-orange-400 hover:bg-orange-500 transition dark:text-white"
+                    class="px-4 py-2 rounded-md bg-orange-500 text-white hover:bg-orange-600 transition text-center"
                 >
                     Hesap Aç
                 </Link>
@@ -102,26 +100,26 @@ const filteredProducts = (category) => {
         </nav>
     </header>
 
+    <div class="bg-gray-500 text-black/50 dark:bg-gray-50 dark:text-white/50 ">
 
-    <div class="bg-gray-500 text-black/50 dark:bg-gray-900 dark:text-white/50 ">
-
-        <div class="relative flex min-h-screen flex-col w-full max-w-2xl lg:max-w-7xl">
+        <div class="relative flex min-h-screen flex-col w-full">
             <div class="relative ">
                 <main class="mt-6 py-12">
-                    <div class="mx-auto max-w-7xl px-6 sm:px-6 lg:px-8">
-                        <div v-for="category in categories" :key="category.id"   class="max-w-sm p-6 bg-white border border-gray-200 rounded-lg shadow-sm ">
-                            <a href="#">
-                                <h5 class="mb-2 text-3xl font-bold tracking-tight text-gray-900 ">
+                    <div v-if="categories.length" class="px-6 sm:px-6 lg:px-8 grid grid-cols-1 sm:grid-cols-3 gap-10">
+                        <div v-for="category in categories" :key="category.id" style="background-image: url('https://i.nefisyemektarifleri.com/2023/06/01/market-alisverisi-yaparken-size-kar-saglayacak-7-altin-puf-noktasi.jpg')"
+                             class="p-6 bg-white border border-gray-200 rounded-lg shadow h-52">
+                            <a class="bg-white" href="#">
+                                <h5 class="mb-2 text-3xl bg-white/80 font-bold tracking-tight py-1 rounded-lg text-center text-gray-600 ">
                                    {{category.name}} Kategorisi
                                 </h5>
                             </a>
                             <p class="mb-3 font-normal text-gray-700">
                               {{category.description}}
                             </p>
-                            <div class="py-4">
+                            <div class="py-4 pt-14">
                                 <Link
                                     :href="route('products', { id: category.id })"
-                                    class="inline-flex items-center px-3 py-2 text-sm font-medium text-center text-gray-600 bg-gray-200 rounded-lg hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-blue-300 ">
+                                    class="inline-flex items-center px-3 py-2 text-sm font-medium text-center text-gray-600 bg-white/80 rounded-lg hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-blue-300 ">
                                     Ürünlere Git
                                     <svg class="rtl:rotate-180 w-3.5 h-3.5 ms-2" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 10">
                                         <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M1 5h12m0 0L9 1m4 4L9 9"/>
@@ -129,6 +127,9 @@ const filteredProducts = (category) => {
                                 </Link>
                             </div>
                         </div>
+                    </div>
+                    <div v-else>
+                        <h4>Kategori Bulunmuyor...</h4>
                     </div>
                 </main>
             </div>

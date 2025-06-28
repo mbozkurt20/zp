@@ -27,6 +27,7 @@ class ProductResource extends JsonResource
           'qr_code' => $this->qr_code,
           'barcode' => $this->barcode,
           'stock_type' => $this->stock_type,
+          'sales_quantity' => $this->sales_quantity,
           'quantity' => $this->quantity,
           'warning_quantity' => $this->warning_quantity,
           'created_at' => $this->created_at,

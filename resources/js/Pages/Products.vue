@@ -104,6 +104,7 @@ const cartStore = useCartStore()
             <div
                 v-for="product in products"
                 :key="product.id"
+                v-if="products.length"
                 class="bg-white border border-gray-200 rounded-2xl shadow-md hover:shadow-xl transition-shadow duration-300 p-6 flex flex-col items-center text-center"
             >
                 <img
@@ -111,7 +112,8 @@ const cartStore = useCartStore()
                     alt=""
                     class="w-36 h-36 object-cover rounded-xl mb-4 shadow-inner"
                 />
-                <h3 class="text-lg font-bold text-gray-800 mb-1">{{ product.name }}</h3>
+                <h3 class="text-lg font-bold text-gray-800 mb-1">{{ product.name }} -  <span class=" font-bold text-gray-600 mb-1">{{ product.sales_quantity }}</span></h3>
+
 
                 <div class="text-xl font-extrabold text-orange-500 mb-4">
                     {{ product.price }}₺
@@ -121,7 +123,7 @@ const cartStore = useCartStore()
                     Stok  {{ product.quantity > 0 ? 'Mevcut' : 'Gelince Haber Ver'}}
                 </div>
 
-                <div class="flex items-center justify-center gap-4 mt-auto">
+                <div v-if="product.quantity" class="flex items-center justify-center gap-4 mt-auto">
                     <button
                         @click="cartStore.decreaseFromCart(product)"
                         class="w-8 h-8 flex items-center justify-center bg-orange-500 hover:bg-orange-400 text-white text-lg font-bold rounded-full shadow"
@@ -136,6 +138,10 @@ const cartStore = useCartStore()
                         class="w-8 h-8 flex items-center justify-center bg-green-500 hover:bg-green-400 text-white text-lg font-bold rounded-full shadow"
                     >+</button>
                 </div>
+            </div>
+
+            <div class="mx-auto text-center bg-gray-100 py-4 px-4 rounded" v-else>
+               <h3> Bu Kategoriye Ait Ürün Bulunmuyor...</h3>
             </div>
         </div>
     </div>

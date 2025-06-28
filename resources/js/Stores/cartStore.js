@@ -3,6 +3,7 @@ import { defineStore } from 'pinia'
 import { ref,computed } from 'vue'
 import axios from "axios";
 import {toast} from "vue3-toastify";
+
 const userId = window.Laravel?.userId;
 
 export const useCartStore = defineStore('cart', () => {
@@ -14,7 +15,7 @@ export const useCartStore = defineStore('cart', () => {
         cluster: 'eu',
     })
 
-    const channel = pusher.subscribe('cart-channel') // kanal ismi
+  const channel = pusher.subscribe('cart-channel') // kanal ismi
     channel.bind(`clear-cart-${userId}`, () => { // event ismi
         clearCart()
         toast.info("Sepetiniz başka bir işlem tarafından boşaltıldı.", {
@@ -65,7 +66,6 @@ export const useCartStore = defineStore('cart', () => {
         try {
             const res = await axios.get('/active/basket')
 
-            console.log({carttt:res})
             if (res.data?.cart) {
                 cart.value = res.data.cart
             }
@@ -90,7 +90,7 @@ export const useCartStore = defineStore('cart', () => {
         Object.values(cart.value).reduce((sum, item) => sum + item.quantity * item.price, 0)
     )
 
-    loadCart()
+//    loadCart()
 
     return {
         cart,

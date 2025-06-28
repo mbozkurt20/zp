@@ -13,8 +13,8 @@ class ProductReports extends Page
 
     protected static ?string $navigationIcon = 'heroicon-o-chart-bar';
     protected static string $view = 'filament.pages.product-reports';
-    protected static ?string $navigationLabel = 'Ürün Raporları';
-    protected static ?string $title = 'Ürün Raporları';
+    protected static ?string $navigationLabel = 'Stok Raporları';
+    protected static ?string $title = 'Stok Raporları';
 
     public $products;
     public $totalPurchase;

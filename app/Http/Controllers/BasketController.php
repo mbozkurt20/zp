@@ -30,7 +30,7 @@ class BasketController extends Controller
             ->select('id','cart')
             ->first();
 
-        return response()->json(['cart' => json_decode($activeBasket->cart)]);
+        return response()->json(['cart' => $activeBasket ? json_decode($activeBasket->cart) : []]);
     }
 
     public function isCheckout($id){
@@ -73,21 +73,23 @@ class BasketController extends Controller
         $basket->update();
 
         foreach ($cart as $item) {
-            if ($item->quantity > Product::find($item->id)->quantity) {
+            $quantity = $item->quantity;
+
+            if ($quantity > Product::find($item->id)->quantity) {
                 return response()->json(['message' => 'Ürün Stoğu yeterli değil'],400);
             }
 
-          if (!BasketItem::where('basket_id', $basket->id)->where('product_id', $item->id)->exists()) {
-              BasketItem::create([
-                  'basket_id' => $basket->id,
-                  'product_id' => $item->id,
-                  'quantity' => $item->quantity,
-              ]);
-          }else{
-              $basketItem = BasketItem::where('basket_id', $basket->id)->where('product_id', $item->id)->first();
-              $basketItem->quantity = $item->quantity;
-              $basketItem->update();
-          }
+            if (!BasketItem::where('basket_id', $basket->id)->where('product_id', $item->id)->exists()) {
+                BasketItem::create([
+                    'basket_id' => $basket->id,
+                    'product_id' => $item->id,
+                    'quantity' => $quantity,
+                ]);
+            }else{
+                $basketItem = BasketItem::where('basket_id', $basket->id)->where('product_id', $item->id)->first();
+                $basketItem->quantity = $quantity;
+                $basketItem->update();
+            }
         }
     }
 

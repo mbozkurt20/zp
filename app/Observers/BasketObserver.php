@@ -26,14 +26,23 @@ class BasketObserver
     {
         $basket = Basket::find($basket->id);
 
-        if (!Order::where('basket_id', $basket->id)->exists() && $basket->is_completed && $basket->basketItems->count()) {
+        if (!Order::where('basket_id', $basket->id)->exists() && $basket->basketItems->count() && $basket->is_completed ) {
 
             $total = $basket->basketItems->sum(function($item) {
               $product = Product::find($item->product_id);
 
-                $product->update([
-                    'quantity' => $product->quantity - $item->quantity
-                ]);
+              if ($product->stock_type == 'Kilogram' || $product->stock_type == 'Gram'){
+                  $gr = explode(' ',$product->sales_quantity);
+
+                  $product->update([
+                      'quantity' => $product->quantity - ((int)$gr[0] * $item->quantity),
+                  ]);
+
+              }else{
+                  $product->update([
+                      'quantity' => $product->quantity - $item->quantity
+                  ]);
+              }
 
               return $product->price * $item->quantity;
             });
@@ -47,6 +56,9 @@ class BasketObserver
                     'is_paid' => true,
                     'discount' => 0,
                 ]);
+
+                $basket->is_shopping = false;
+                $basket->update();
 
                 Pusher::trigger('cart-channel','clear-cart-'.auth()->id(), $order);
             } catch (\Exception $exception) {

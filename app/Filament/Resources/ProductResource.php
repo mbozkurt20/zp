@@ -53,6 +53,15 @@ class ProductResource extends Resource
                     ->numeric()
                     ->label('Fiyat')
                     ->required(),
+                Forms\Components\Select::make('sales_quantity')->label('Ürün Satış Miktarı')->options([
+                    '100 Gram' => '100 Gram',
+                    '125 Gram' => '125 Gram',
+                    '150 Gram' => '150 Gram',
+                    '200 Gram' => '200 Gram',
+                    '250 Gram' => '250 Gram',
+                    '500 Gram' => '500 Gram',
+                    '1 KG' => '1 KG',
+                ]),
                 TextInput::make('discount')
                     ->numeric()
                     ->default(0.00)
@@ -65,7 +74,7 @@ class ProductResource extends Resource
                     'Adet' => 'Adet',
                 ])->required(),
                 Forms\Components\Select::make('category_id')->label('Kategori')->options(Category::pluck('name','id'))->required(),
-                TextInput::make('quantity')->minValue(1)->label('Miktar')->numeric()->required(),
+                TextInput::make('quantity')->minValue(1)->label('Stok Miktar')->numeric()->required(),
                 TextInput::make('warning_quantity')->label('Uyarı Miktarı')->numeric()->nullable(),
             ]);
     }

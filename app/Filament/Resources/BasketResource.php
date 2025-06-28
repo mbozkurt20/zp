@@ -35,16 +35,19 @@ class BasketResource extends Resource
     {
         return $form
             ->schema([
-                Toggle::make('is_completed')
+               Toggle::make('is_completed')
                     ->label('Alışveriş Tamamlandı')
                     ->reactive()
+                   ->required()
                     ->afterStateUpdated(fn ($state, callable $set) => $set('is_shopping', !$state)),
 
-                Toggle::make('is_shopping')
-                    ->reactive()
-                    ->afterStateUpdated(fn ($state, callable $set) => $set('is_completed', !$state)),
-
-                Forms\Components\Select::make('payment_type')
+                /*
+               Toggle::make('is_shopping')
+                   ->reactive()
+                   ->label('Siparişi Sonlandır')
+                   ->afterStateUpdated(fn ($state, callable $set) => $set('is_completed', !$state)),
+*/
+                Forms\Components\Radio::make('payment_type')
                     ->label('Ödeme Türü')
                     ->required()
                     ->options([
@@ -52,6 +55,7 @@ class BasketResource extends Resource
                         'Kredi Kart' => 'Kredi Kart',
                         'Eft/Havale' => 'Eft/Havale',
                     ])
+
             ]);
     }
     public static function table(Table $table): Table

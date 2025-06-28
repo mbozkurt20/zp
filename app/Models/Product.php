@@ -35,6 +35,7 @@ class Product extends Model
       'description',
       'price',
       'purchase_price',
+      'sales_quantity',
       'discount',
       'tax',
       'qr_code',

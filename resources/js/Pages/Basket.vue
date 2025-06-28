@@ -1,12 +1,11 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import axios from 'axios'
-import { useCartStore } from '../Stores/cartStore'
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head } from '@inertiajs/vue3';
-
 import { Link } from '@inertiajs/vue3';
-import ApplicationLogo from "@/Components/ApplicationLogo.vue";
+import { useCartStore } from '../Stores/cartStore'
+
 import {toast} from "vue3-toastify";
 const products = ref([])
 const cartStore = useCartStore()
@@ -68,7 +67,7 @@ onMounted(fetchProducts)
                                 <div class="md:pl-3 md:w-8/12 2xl:w-3/4 flex flex-col justify-center">
                                     <!--p class="text-xs leading-3 text-gray-800 md:pt-0 pt-4">RF293</p-->
                                     <div class="mx-auto text-center w-full">
-                                        <p class="text-base font-black leading-none text-gray-800 py-4">{{item.name}}</p>
+                                        <p class="text-base font-black leading-none text-gray-800 py-4">{{item.name}} - <span class=" font-bold text-gray-600 mb-1">{{ item.sales_quantity }}</span></p>
                                         <p class="text-sm font-black leading-none text-gray-500 pb-4">{{item.description}}</p>
 
                                         <div class="font-semibold text-green-500 text-sm  mb-4">
@@ -78,14 +77,14 @@ onMounted(fetchProducts)
                                         <div class="flex mx-auto justify-center gap-4 mt-4">
                                             <button
                                                 @click="cartStore.decreaseFromCart(item)"
-                                                class="px-3 py-1 bg-orange-500 text-white rounded hover:bg-orange-400"
+                                                class="px-3 py-1 bg-orange-500 text-white hover:bg-orange-400 rounded-full shadow"
                                             >-</button>
                                             <span class="font-semibold text-lg">
-          {{ cartStore.cart[item.id]?.quantity || 0 }}
-        </span>
+                                                {{ cartStore.cart[item.id]?.quantity || 0 }}
+                                            </span>
                                             <button
                                                 @click="cartStore.addToCart(item)"
-                                                class="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-400"
+                                                class="w-8 h-8 flex items-center justify-center bg-green-500 hover:bg-green-400 text-white text-lg font-bold rounded-full shadow"
                                             >+</button>
                                         </div>
                                     </div>
