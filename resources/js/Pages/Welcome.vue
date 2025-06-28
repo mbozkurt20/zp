@@ -106,7 +106,7 @@ const filteredProducts = (category) => {
             <div class="relative ">
                 <main class="mt-6 py-12">
                     <div v-if="categories.length" class="px-6 sm:px-6 lg:px-8 grid grid-cols-1 sm:grid-cols-3 gap-10">
-                        <div v-for="category in categories" :key="category.id" style="background-image: url('https://i.nefisyemektarifleri.com/2023/06/01/market-alisverisi-yaparken-size-kar-saglayacak-7-altin-puf-noktasi.jpg')"
+                        <div v-for="category in categories" :key="category.id" style="background-image: url('/images/15.png')"
                              class="p-6 bg-white border border-gray-200 rounded-lg shadow h-52">
                             <a class="bg-white" href="#">
                                 <h5 class="mb-2 text-3xl bg-white/80 font-bold tracking-tight py-1 rounded-lg text-center text-gray-600 ">

@@ -53,6 +53,11 @@ class ProductResource extends Resource
                     ->numeric()
                     ->label('Fiyat')
                     ->required(),
+
+                TextInput::make('barcode')
+                    ->numeric()
+                    ->label('Barkod')
+                    ->required(),
                 Forms\Components\Select::make('sales_quantity')->label('Ürün Satış Miktarı')->options([
                     '100 Gram' => '100 Gram',
                     '125 Gram' => '125 Gram',

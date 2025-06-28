@@ -202,6 +202,8 @@
                             window.dispatchEvent(new CustomEvent('notify', { detail: { type: 'success', message: data.message } }));
                             this.cart = [];
                             this.payment = '';
+                            window.open('/receipt/print/' + data.order.id, '_blank');
+                            console.log({da: data.order})
                         });
                 },
 

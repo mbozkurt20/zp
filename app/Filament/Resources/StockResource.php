@@ -50,6 +50,9 @@ class StockResource extends Resource
                     'Litre' => 'Litre',
                     'Adet' => 'Adet',
                 ])->required(),
+
+                TextInput::make('quantity')->minValue(1)->label('Stok Miktar')->numeric()->required(),
+
             ]);
     }
 

@@ -154,7 +154,7 @@ Route::middleware('auth')->group(function () {
             $barcode = 'o-' . rand(100000000, 999999999);
         }
 
-        \App\Models\Order::create([
+        $order = \App\Models\Order::create([
             'creator_id' => auth()->id(),
             'user_id' => auth()->id(),
             'basket_id' => $basket->id,
@@ -165,7 +165,7 @@ Route::middleware('auth')->group(function () {
         ]);
 
         session()->forget('cart');
-        return response()->json(['message' => 'Satış Tamamlandı!']);
+        return response()->json(['order' => $order, 'message' => 'Satış Tamamlandı!']);
     });
 });
 
@@ -177,11 +177,9 @@ Route::get('barcode/print/order/{order}',function (\App\Models\Order $order){
     return view('barcode.order-print', compact('order'));
 })->name('barcode.order.print');
 
-
 Route::get('receipt/print/{order}',function (\App\Models\Order $order){
     return view('barcode.receipt-order-print', compact('order'));
 })->name('barcode.receipt.order.print');
-
 
 
 Route::get('barcode/bulk-print',function (Request $request){
