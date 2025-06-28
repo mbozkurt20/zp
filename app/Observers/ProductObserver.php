@@ -9,13 +9,13 @@ class ProductObserver
 {
     public function creating(Product $product)
     {
-        $barcode = 'p-' . rand(100000000, 999999999);
+       /* $barcode = 'p-' . rand(100000000, 999999999);
 
         if (Product::where('barcode', $barcode)->exists()) {
             $barcode = 'p-' . rand(100000000, 999999999);
         }
 
-        $product->barcode = $barcode;
+        $product->barcode = $barcode; */
     }
 
     /**
