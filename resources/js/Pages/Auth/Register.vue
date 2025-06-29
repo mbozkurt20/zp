@@ -22,7 +22,7 @@ const submit = () => {
 </script>
 
 <template>
-    <GuestLayout>
+    <GuestLayout class="bg-blue-950">
         <Head title="Register" />
 
         <form @submit.prevent="submit">
@@ -125,4 +125,8 @@ const submit = () => {
             </div>
         </form>
     </GuestLayout>
+
+    <Link  class="flex" href="/">
+        <h4 class="text-white text-lg pt-5 hover:text-gray-200" >Anasayfa Git</h4>
+    </Link>
 </template>

@@ -62,7 +62,7 @@ const filteredProducts = (category) => {
 <template>
     <Head title="Hoşgeldiniz" />
     <header
-        class="sticky top-0 z-50 bg-white/90 backdrop-blur shadow flex flex-col sm:flex-row sm:items-center sm:justify-between px-6 py-3"
+        class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 sticky top-0 z-50 bg-white/90 backdrop-blur shadow flex flex-col sm:flex-row sm:items-center sm:justify-between py-3"
     >
         <div class="flex items-center gap-2">
             <span class="text-3xl">🛒</span>
@@ -71,20 +71,22 @@ const filteredProducts = (category) => {
 
         <nav
             v-if="canLogin"
-            class="flex flex-col sm:flex-row gap-2 mt-2 sm:mt-0"
+            class="flex flex-col sm:flex-row "
         >
-            <Link
-                v-if="$page.props.auth.user"
-                :href="route('dashboard')"
-                class="px-4 py-2 rounded-md text-gray-700 hover:bg-gray-100 transition"
-            >
-                Satın Almaya Git
-            </Link>
+            <div v-if="$page.props.auth.user" class="bg-white/80 border-2 border-blue-900 rounded-2xl hover:bg-blue-950 hover:text-white ml-5">
+                <Link
+
+                    :href="route('dashboard')"
+                    class="px-4 py-2 rounded-md font-bold     transition text-center"
+                >
+                    Alışverişe Başla ->
+                </Link>
+            </div>
 
             <template v-else>
                 <Link
                     :href="route('login')"
-                    class="px-4 py-2 rounded-md bg-orange-500 text-white hover:bg-orange-600 transition text-center"
+                    class="px-4 py-2 rounded-md  text-blue-950 hover:text-blue-700  transition text-center"
                 >
                     Giriş Yap
                 </Link>
@@ -92,7 +94,7 @@ const filteredProducts = (category) => {
                 <Link
                     v-if="canRegister"
                     :href="route('register')"
-                    class="px-4 py-2 rounded-md bg-orange-500 text-white hover:bg-orange-600 transition text-center"
+                    class="px-4 py-2 rounded-md text-blue-950 hover:text-blue-700 transition text-center"
                 >
                     Hesap Aç
                 </Link>
@@ -100,16 +102,16 @@ const filteredProducts = (category) => {
         </nav>
     </header>
 
-    <div class="bg-gray-500 text-black/50 dark:bg-gray-50 dark:text-white/50 ">
+    <div class="bg-blue-950 text-black/50  dark:text-white/50 ">
 
-        <div class="relative flex min-h-screen flex-col w-full">
-            <div class="relative ">
+        <div class="relative flex min-h-screen flex-col w-full  mx-auto max-w-7xl">
+            <div class="relative w-full">
                 <main class="mt-6 py-12">
-                    <div v-if="categories.length" class="px-6 sm:px-6 lg:px-8 grid grid-cols-1 sm:grid-cols-3 gap-10">
-                        <div v-for="category in categories" :key="category.id" style="background-image: url('/images/15.png')"
-                             class="p-6 bg-white border border-gray-200 rounded-lg shadow h-52">
+                    <div v-if="categories.length" class="px-6 sm:px-6 lg:px-8 grid grid-cols-1 sm:grid-cols-2 gap-10">
+                        <div v-for="category in categories" :key="category.id"
+                             class="p-6 bg-white/90 border border-gray-200 rounded-lg shadow h-52">
                             <a class="bg-white" href="#">
-                                <h5 class="mb-2 text-3xl bg-white/80 font-bold tracking-tight py-1 rounded-lg text-center text-gray-600 ">
+                                <h5 class="mb-2 text-2xl bg-white/80 font-bold tracking-tight py-1 rounded-lg text-center text-blue-950 ">
                                    {{category.name}} Kategorisi
                                 </h5>
                             </a>
@@ -119,7 +121,7 @@ const filteredProducts = (category) => {
                             <div class="py-4 pt-14">
                                 <Link
                                     :href="route('products', { id: category.id })"
-                                    class="inline-flex items-center px-3 py-2 text-sm font-medium text-center text-gray-600 bg-white/80 rounded-lg hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-blue-300 ">
+                                    class="inline-flex items-center px-3 py-2 text-sm font-medium text-center text-blue-950 bg-white/80 rounded-lg hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-blue-300 ">
                                     Ürünlere Git
                                     <svg class="rtl:rotate-180 w-3.5 h-3.5 ms-2" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 10">
                                         <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M1 5h12m0 0L9 1m4 4L9 9"/>

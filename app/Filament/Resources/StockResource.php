@@ -29,7 +29,7 @@ class StockResource extends Resource
     {
         return 'Stoklar';
     }
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-truck';
 
     public static function form(Form $form): Form
     {

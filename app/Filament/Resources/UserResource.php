@@ -22,11 +22,15 @@ class UserResource extends Resource
     {
         return 'Kullanıcılar';
     }
+    public static function getModelLabel(): string
+    {
+        return __('Kullanıcı');
+    }
     public static function getPluralModelLabel(): string
     {
         return 'Kullanıcılar';
     }
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-user';
 
     public static function form(Form $form): Form
     {

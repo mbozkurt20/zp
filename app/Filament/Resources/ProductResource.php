@@ -25,11 +25,15 @@ class ProductResource extends Resource
     {
         return 'Ürünler';
     }
+    public static function getModelLabel(): string
+    {
+        return __('Ürün');
+    }
     public static function getPluralModelLabel(): string
     {
         return 'Ürünler';
     }
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-wrench-screwdriver';
 
     public static function form(Form $form): Form
     {

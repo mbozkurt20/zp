@@ -48,10 +48,10 @@ const filteredProducts = (category) => {
                 <h2
                     class="text-xl font-semibold leading-tight text-gray-800"
                 >
-                    Ürünler
+                    Sepet:
                 </h2>
 
-                <div class="flex text-sm text-gray-800 gap-5 mt-1">
+                <div class="flex flex-col md:flex-row text-sm text-gray-800 gap-5 mt-1">
                     <div><span class="font-semibold">Toplam Ürün:</span> <strong
                         class="text-green-600">{{ cartStore.totalProduct }}</strong>
                     </div>
@@ -60,12 +60,14 @@ const filteredProducts = (category) => {
                         class="text-green-600">{{ cartStore.totalAmount }}₺</strong>
                     </div>
 
-                    <div class="ml-auto">
+                    <div class="ml-auto gap-4 space-x-4">
                         <Link
-                            class=" text-orange-500 border border-orange-500 rounded-md py-2 px-3 hover:bg-orange-400 hover:text-white"
+                            class="  text-blue-950 font-bold   border-2 border-blue-950 py-1 px-2 rounded-xl hover:bg-blue-950 hover:text-white"
                             :href="route('basket')">
-                            Sepet
+                            Sepete Git
                         </Link>
+
+                        <a v-if="cartStore.cart"  class=" cursor-pointer text-red-600  ont-bold   border-2 border-red-500 py-1 px-2 rounded-xl hover:bg-red-500 hover:text-white"  @click="cartStore.clearCart()">Sepeti Temizle</a>
                     </div>
                 </div>
             </div>
@@ -74,9 +76,9 @@ const filteredProducts = (category) => {
         <div class="py-12 ">
             <div class="mx-auto max-w-7xl px-6 sm:px-6 lg:px-8">
                 <div v-if="categories.length" v-for="category in categories" :key="category.id"
-                     class="mb-10 overflow-hidden bg-white shadow-xl rounded-2xl">
-                    <div class="grid grid-cols-2 px-3 py-8">
-                        <h4 class=" text-2xl text-orange-500 pl-8 font-bold ">
+                     class="mb-10 overflow-hidden bg-white/90 shadow-xl rounded-2xl">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 px-3 py-8">
+                        <h4 class="mb-5 sm:mb-0 text-2xl text-blue-950 pl-8 font-bold ">
                             {{ category.name }} Reyonu
                         </h4>
 
@@ -111,7 +113,6 @@ const filteredProducts = (category) => {
                                     {{ product.price }}₺
                                 </div>
 
-
                                 <div class="font-semibold text-green-500 text-sm  mb-4">
                                     Stok  {{ product.quantity > 0 ? 'Mevcut' : 'Gelince Haber Ver'}}
                                 </div>
@@ -123,11 +124,12 @@ const filteredProducts = (category) => {
                                     >-</button>
 
                                     <span class="font-semibold text-lg min-w-[24px] text-center">
-              {{ cartStore.cart[product.id]?.quantity || 0 }}
+              {{ cartStore.cart&&cartStore.cart[product.id]?.quantity || 0 }}
             </span>
 
                                     <button
                                         @click="cartStore.addToCart(product)"
+
                                         class="w-8 h-8 flex items-center justify-center bg-green-500 hover:bg-green-400 text-white text-lg font-bold rounded-full shadow"
                                     >+</button>
                                 </div>
@@ -138,8 +140,11 @@ const filteredProducts = (category) => {
                         </div>
                     </div>
                 </div>
-                <div v-else class="bg-orange-500 h-32 rounded-lg" >
-                    <h5 class="text-white text-3xl font-bold mx-auto text-center py-5">Ürünler Bulunmamaktadır...</h5>
+
+                <div v-else class="mt-20">
+                    <div  class="bg-white/90 h-32 rounded-lg py-4" >
+                        <h5 class="text-blue-950 text-3xl font-bold mx-auto text-center py-5">Ürünler Bulunmamaktadır...</h5>
+                    </div>
                 </div>
             </div>
         </div>

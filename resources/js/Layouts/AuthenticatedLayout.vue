@@ -91,6 +91,9 @@ const showingNavigationDropdown = ref(false);
                                         >
                                             Profil
                                         </DropdownLink>
+
+                                        <a v-if="$page.props.auth.is_admin" class="px-3 hover:bg-gray-100 py-1" href="/admin"> Panel</a>
+
                                         <DropdownLink
                                             :href="route('logout')"
                                             method="post"
@@ -211,7 +214,7 @@ const showingNavigationDropdown = ref(false);
             </header>
 
             <!-- Page Content -->
-            <main>
+            <main class="min-h-screen bg-blue-950">
                 <slot />
             </main>
         </div>

@@ -21,11 +21,15 @@ class CategoryResource extends Resource
     {
         return 'Kategoriler';
     }
+    public static function getModelLabel(): string
+    {
+        return __('Kategori');
+    }
     public static function getPluralModelLabel(): string
     {
         return 'Kategoriler';
     }
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-squares-2x2';
 
     public static function form(Form $form): Form
     {

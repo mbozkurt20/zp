@@ -83,9 +83,9 @@ const filteredProducts = (category) => {
                         <Link
                             v-if="$page.props.auth.user"
                             :href="route('dashboard')"
-                            class="w-full sm:w-auto text-center rounded-md text-xl px-4 text-lg py-2 text-black ring-1 ring-transparent transition hover:text-black/70 focus:outline-none focus-visible:ring-[#FF2D20] dark:text-white dark:hover:text-white/80 dark:focus-visible:ring-white"
+                            class="w-full sm:w-auto text-center rounded-md font-bold text-xl px-4 py-2 text-black ring-1 ring-transparent transition hover:text-black/70 focus:outline-none focus-visible:ring-[#FF2D20] dark:text-white dark:hover:text-white/80 dark:focus-visible:ring-white"
                         >
-                            → Satın Almaya Git
+                            Alışverişe Başla ->
                         </Link>
 
                         <template v-else>

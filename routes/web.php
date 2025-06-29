@@ -27,6 +27,7 @@ Route::get('/category/{id}', function ($id) {
         'canLogin' => Route::has('login'),
         'canRegister' => Route::has('register'),
         'laravelVersion' => Application::VERSION,
+        'isLogin' => auth()->check(),
         'phpVersion' => PHP_VERSION,
     ]);
 })->name('products');
@@ -65,6 +66,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/cart', [\App\Http\Controllers\BasketController::class, 'getCart']);
     Route::post('/add-product', [\App\Http\Controllers\BasketController::class, 'addProduct']);
     Route::post('/remove-product', [\App\Http\Controllers\BasketController::class, 'removeProduct']);
+    Route::post('/clear-cart', [\App\Http\Controllers\BasketController::class, 'clearCart']);
 
     Route::get('/checkout/basket/{id}', [\App\Http\Controllers\BasketController::class, 'isCheckout']);
     Route::get('/active/basket/', [\App\Http\Controllers\BasketController::class, 'activeBasket']);

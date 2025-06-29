@@ -12,7 +12,7 @@ class CustomJsPage extends Page
 {
     use WithPagination;
 
-    protected static ?string $navigationIcon = 'heroicon-o-document-text';
+    protected static ?string $navigationIcon = 'heroicon-o-tv';
 
     protected static string $view = 'filament.pages.custom-js-page';
    protected static ?string $title = 'Sipariş Ekranı';

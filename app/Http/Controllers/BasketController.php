@@ -39,7 +39,12 @@ class BasketController extends Controller
         $basket->is_checkout = !$basket->is_checkout;
         $basket->update();
 
-        return response()->json(['data' => $basket,'message' => 'Siparişleriniz Hazırlanıyor...']);
+
+        if ($basket->is_checkout){
+            return response()->json(['data' => $basket,'message' => "<strong>Siparişleriniz Hazırlanıyor,</strong> <br><br> <strong>Bizi Tercih Ettiğiniz için Teşekkürler!!</strong>"]);
+        }else{
+            return response()->json(['data' => $basket,'message' => '<strong>Keyifli Alışverişler Dileriz !!</strong> ']);
+        }
     }
     public function orders()
     {
@@ -56,41 +61,88 @@ class BasketController extends Controller
     public function addProduct(Request $request)
     {
         $userId = Auth::id();
-
         $cart = json_decode($request->cart);
+        $productD = Product::find($request->productId);
 
-        if (!Basket::where('user_id', $userId)->where('is_completed', false)->where('is_shopping', true)->exists()) {
+// Basket kontrol ve oluşturma
+        $basket = Basket::where('user_id', $userId)
+            ->where('is_completed', false)
+            ->where('is_shopping', true)
+            ->first();
+
+        if (!$basket) {
             $basket = Basket::create([
                 'user_id' => $userId,
                 'is_shopping' => true,
                 'is_completed' => false,
             ]);
-        } else {
-            $basket = Basket::where('user_id', $userId)->where('is_completed', false)->where('is_shopping', true)->first();
         }
 
+// Sepeti JSON olarak güncelle (stok kontrolünden sonra istersen bunu da yapabilirsin)
         $basket->cart = json_encode($cart);
+
+// Önce tüm stokları kontrol et
+        foreach ($cart as $item) {
+          if ($productD->id == $item->id) {
+              $quantity = $item->quantity;
+
+              if ($item->sales_quantity) {
+                  $gr = (int) explode(" ", $item->sales_quantity)[0];
+                  $grQuantity = $quantity * $gr;
+
+                  if ($grQuantity > $productD->quantity-$gr) {
+                      $sf = $item->quantity*$gr;
+                      return response()->json([
+                          'message' => "Üzgünüz, {$item->name} Stoğu Yetersiz"
+                      ], 400);
+                  }
+              } else {
+                  if ($quantity > $productD->quantity-1) {
+                      return response()->json([
+                          'message' => "Üzgünüz, {$item->name} Stoğu Yetersiz"
+                      ], 400);
+                  }
+              }
+          }
+        }
+
+// Stok kontrolünden geçti, sepeti kaydet
         $basket->update();
 
+// BasketItem güncelleme / ekleme
         foreach ($cart as $item) {
-            $quantity = $item->quantity;
+            $basketItem = BasketItem::where('basket_id', $basket->id)
+                ->where('product_id', $item->id)
+                ->first();
 
-            if ($quantity > Product::find($item->id)->quantity) {
-                return response()->json(['message' => 'Ürün Stoğu yeterli değil'],400);
-            }
-
-            if (!BasketItem::where('basket_id', $basket->id)->where('product_id', $item->id)->exists()) {
+            if ($basketItem) {
+                $basketItem->quantity = $item->quantity;
+                $basketItem->update();
+            } else {
                 BasketItem::create([
                     'basket_id' => $basket->id,
                     'product_id' => $item->id,
-                    'quantity' => $quantity,
+                    'quantity' => $item->quantity,
                 ]);
-            }else{
-                $basketItem = BasketItem::where('basket_id', $basket->id)->where('product_id', $item->id)->first();
-                $basketItem->quantity = $quantity;
-                $basketItem->update();
             }
         }
+
+        return response()->json(['message' => 'Sepet başarıyla güncellendi']);
+    }
+
+    public function clearCart()
+    {
+        $activeBasket = Basket::where('user_id',\Illuminate\Support\Facades\Auth::id())
+            ->where('is_shopping',true)
+            ->where('is_completed',false)
+            ->select('id','cart')
+            ->first();
+
+        $activeBasket->cart = null;
+
+        $activeBasket->update();
+
+        return response()->json(['data' => $activeBasket,'message' => 'Sepetiniz Temizlendi']);
     }
 
     public function removeProduct(Request $request)

@@ -3,11 +3,11 @@ import { defineStore } from 'pinia'
 import { ref,computed } from 'vue'
 import axios from "axios";
 import {toast} from "vue3-toastify";
+import Swal from 'sweetalert2'
 
 const userId = window.Laravel?.userId;
 
 export const useCartStore = defineStore('cart', () => {
-    console.log({auth:userId })
     const cart = ref({})
 
     // Pusher setup
@@ -18,32 +18,43 @@ export const useCartStore = defineStore('cart', () => {
   const channel = pusher.subscribe('cart-channel') // kanal ismi
     channel.bind(`clear-cart-${userId}`, () => { // event ismi
         clearCart()
-        toast.info("Sepetiniz başka bir işlem tarafından boşaltıldı.", {
-            autoClose: 3000
+
+        toast("Sepetiniz Temizlendi", {
+            "theme": "dark",
+            "type": "info",
+            "dangerouslyHTMLString": true
         })
     })
 
     const addToCart = async (product) => {
+        console.log({product:product})
         if (!cart.value[product.id]) {
-            cart.value[product.id] = { ...product, quantity: 1 }
+            await axios.post('/add-product', { cart: JSON.stringify(cart.value), productId: product.id }).then(res => {
+                console.log({res: res})
+                cart.value[product.id] = { ...product, quantity: 1 }
+            }).catch(err => {
+                console.log({error1: err})
 
-            try {
-                const response = await axios.post('/add-product', { cart: JSON.stringify(cart.value) });
-                console.log({ response });
-            } catch (error) {
-                console.error('Error removing from cart:', error);
-            }
+                toast(err.response.data.message, {
+                    "theme": "dark",
+                    "type": "warning",
+                    "dangerouslyHTMLString": true
+                })
+            })
         } else {
-            if (cart.value[product.id].quantity < product.quantity) {
+            console.log({product:product})
+            await axios.post('/add-product', { cart: JSON.stringify(cart.value), productId: product.id }).then(res => {
+                console.log({res: res})
                 cart.value[product.id].quantity++
 
-                try {
-                    const response = await axios.post('/add-product', { cart: JSON.stringify(cart.value) });
-                    console.log({ response });
-                } catch (error) {
-                    console.error('Error removing from cart:', error);
-                }
-            }
+            }).catch(err => {
+                console.log({error1: err})
+                toast(err.response.data.message, {
+                    "theme": "dark",
+                    "type": "warning",
+                    "dangerouslyHTMLString": true
+                })
+            })
         }
     }
 
@@ -65,32 +76,51 @@ export const useCartStore = defineStore('cart', () => {
     const loadCart = async () => {
         try {
             const res = await axios.get('/active/basket')
-
-            if (res.data?.cart) {
-                cart.value = res.data.cart
-            }
+console.log({sepet:res.data})
+            cart.value = res.data.cart
         } catch (error) {
             console.error('Sepet yüklenirken hata oluştu:', error)
         }
     }
 
-    const clearCart = () => {
-        cart.value = {}
+    const clearCart =  () => {
+        Swal.fire({
+            title: 'Sepeti temizlemek istiyor musunuz?',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Evet, temizle',
+            cancelButtonText: 'Vazgeç'
+        }).then((result) => {
+            if (result.isConfirmed) {
+
+                axios.post('/clear-cart', { cart: JSON.stringify(cart.value) }).then(res => {
+                    cart.value = {}
+                    Swal.fire('Temizlendi!', 'Sepetiniz boşaltıldı.', 'success')
+                }).catch(err => {
+                    toast('Sepetiniz anlık bir hatadan temizlenemedi!!', {
+                        "theme": "dark",
+                        "type": "error",
+                        "dangerouslyHTMLString": true
+                    })
+                })
+
+            }
+        })
     }
 
     const totalItems = computed(() =>
-        Object.values(cart.value).reduce((sum, item) => sum + item.quantity, 0)
+        cart.value ? Object.values(cart.value).reduce((sum, item) => sum + item.quantity, 0)  :null
     )
 
     const totalProduct = computed(() =>
-        Object.values(cart.value).length
+        cart.value ?  Object.values(cart.value).length :null
     )
 
     const totalAmount = computed(() =>
-        Object.values(cart.value).reduce((sum, item) => sum + item.quantity * item.price, 0)
+        cart.value ? Object.values(cart.value).reduce((sum, item) => sum + item.quantity * item.price, 0) : null
     )
 
-//    loadCart()
+  loadCart()
 
     return {
         cart,

@@ -22,7 +22,11 @@ const isCheckout = (id) => {
     axios.get(`/checkout/basket/${id}`).then(res => {
         console.log({sa:res})
         props.activeBasket.is_checkout = res.data.data.is_checkout;
-        toast.success('Siparişiniz Hazırlanıyor...')
+        toast(res.data.message, {
+            "theme": "dark",
+            "type": "success",
+            "dangerouslyHTMLString": true,
+        })
     }).catch(err => {
         console.log({err:err})
     })
@@ -39,12 +43,14 @@ onMounted(fetchProducts)
                 <h2
                     class="text-xl font-semibold leading-tight text-gray-800"
                 >
-                    Sepet
+                    Sepet:
                 </h2>
 
-                <div class="flex text-sm text-gray-800 gap-5 mt-1">
+                <div class="flex text-sm  gap-5 mt-1">
                     <div><span class="font-semibold">Toplam Ürün:</span> <strong class="text-green-600">{{ cartStore.totalProduct }}</strong></div>
                     <div><span class="font-semibold">Toplam Tutar:</span> <strong class="text-green-600">{{ cartStore.totalAmount }}₺</strong></div>
+
+                    <a v-if="cartStore.cart"  class=" cursor-pointer text-red-600  hover:text-red-500"  @click="cartStore.clearCart()">Sepeti Temizle</a>
                 </div>
             </div>
         </template>
@@ -55,8 +61,8 @@ onMounted(fetchProducts)
                     <div class="sm:flex shadow-md my-10">
                         <div class="  w-full  sm:w-3/4 bg-white px-10 py-10">
                             <div class="flex justify-between border-b pb-8">
-                                <h1 class="font-semibold text-2xl">Alışveriş Sepeti</h1>
-                                <h2 class="font-semibold text-2xl">{{cartStore.totalProduct}} Ürün</h2>
+                                <h1 class="font-semibold text-3xl">Alışveriş Sepeti</h1>
+                                <h2 class="font-semibold text-xl">Sepetinizde <span class="text-orange-600">{{cartStore.totalProduct}} Ürün</span> Bulunuyor.</h2>
                             </div>
                             <div v-for="item in cartStore.cart" class="border-b border-orange-200 md:flex items-strech py-8 md:py-10 lg:py-8 border-t">
 
@@ -67,7 +73,12 @@ onMounted(fetchProducts)
                                 <div class="md:pl-3 md:w-8/12 2xl:w-3/4 flex flex-col justify-center">
                                     <!--p class="text-xs leading-3 text-gray-800 md:pt-0 pt-4">RF293</p-->
                                     <div class="mx-auto text-center w-full">
-                                        <p class="text-base font-black leading-none text-gray-800 py-4">{{item.name}} - <span class=" font-bold text-gray-600 mb-1">{{ item.sales_quantity }}</span></p>
+                                        <p class="text-base font-black leading-none text-blue-950 py-4">{{item.name}} - <span class=" font-bold text-gray-600 mb-1">{{ item.sales_quantity }}</span></p>
+
+                                        <div class="text-xl font-extrabold text-orange-500 mb-4">
+                                            {{ item.price }}₺
+                                        </div>
+
                                         <p class="text-sm font-black leading-none text-gray-500 pb-4">{{item.description}}</p>
 
                                         <div class="font-semibold text-green-500 text-sm  mb-4">
@@ -88,10 +99,7 @@ onMounted(fetchProducts)
                                             >+</button>
                                         </div>
                                     </div>
-
-
                                 </div>
-
                             </div>
 
                             <div class="bg-gray-50 py-5 w-auto" v-if="!cartStore.totalProduct">
@@ -106,11 +114,15 @@ onMounted(fetchProducts)
                                 Alışverişe Devam Et
                             </Link>
                         </div>
-                        <div id="summary" class=" w-full   sm:w-1/4   md:w-1/2     px-8 py-10">
-                            <h1 class="font-semibold text-2xl border-b pb-8">Sepet Özeti</h1>
-                            <div class="flex justify-between mt-10 mb-5">
-                                <span class="font-semibold text-sm uppercase">Toplam {{cartStore.totalItems}} Adet</span>
-                                <span class="font-semibold text-lg">{{cartStore.totalAmount}}₺</span>
+                        <div id="summary" class=" w-full   sm:w-1/4   md:w-1/2     px-8 py-10 bg-white/90">
+                            <h1 class="font-semibold text-3xl border-b pb-8">Sepet Özeti</h1>
+                            <div class=" justify-between mt-10 mb-5">
+                                <div class="" v-for="item in cartStore.cart">
+                                    <div class="mb-2 gap-2 flex border-b border-gray-300">
+                                        <span>{{item.name}} <strong>x {{item.quantity}}</strong></span>
+                                        <span class="ml-auto font-semibold">{{item.price}}₺ </span>
+                                    </div>
+                                </div>
                             </div>
                             <!--div>
                                 <label class="font-medium inline-block mb-3 text-sm uppercase">
@@ -130,14 +142,15 @@ onMounted(fetchProducts)
 
                                 <div v-if="cartStore.totalProduct">
                                     <div v-if="activeBasket && !activeBasket.is_checkout" class="pt-24">
-                                        <h5 class="text-white bg-green-500 rounded-xl py-2 cursor-pointer hover:bg-green-400 text-2xl mx-auto text-center mt-5">
+                                        <p class="text-orange-600 badge"><strong>Bilgi:</strong> Alışverişi Tamamla onaylandıktan sonra siparişleriniz hazırlanmaya başlanıcaktır.</p>
+                                        <h5 class="text-white bg-green-500 rounded-lg py-2 cursor-pointer hover:bg-green-400 text-xl mx-auto text-center mt-5">
                                             <a @click="isCheckout(activeBasket.id)"> Alışverişi Tamamla</a>
                                         </h5>
                                     </div>
 
                                     <div v-else disabled="" class="pt-24">
-                                        <p class="text-gray-600 text-lg">Siparişleriniz Hazırlanıyor...</p>
-                                        <h5 class="text-white bg-orange-500 hover:bg-orange-400 rounded-xl py-2 cursor-pointer text-2xl mx-auto text-center mt-5">
+                                        <p class="text-gray-700 text-lg">Siparişleriniz Hazırlanıyor...</p>
+                                        <h5 class="text-white bg-blue-950 hover:bg-blue-900 rounded-xl py-2 cursor-pointer text-2xl mx-auto text-center mt-5">
                                             <a @click="isCheckout(activeBasket.id)"> Alışverişe Devam Et </a>
                                         </h5>
                                     </div>
