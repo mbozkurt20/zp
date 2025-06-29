@@ -37,10 +37,10 @@ const cartStore = useCartStore()
         class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 sticky top-0 z-50 bg-white/90 backdrop-blur  flex flex-col sm:flex-row sm:items-center sm:justify-between py-3"
     >
         <div class="flex items-center gap-2">
-            <span class="text-3xl">🛒</span>
+            <img class="h-10" src="/public/images/logo.png" alt="">
             <h1 class="text-xl font-semibold text-gray-800">Emisoft Menü</h1>
 
-            <div class="bg-white/80 border-2 border-blue-900 rounded-2xl hover:bg-blue-950 hover:text-white ml-5">
+            <div class="bg-white/80 border-2 border-blue-900 rounded-2xl hover:bg-blue-950 hover:text-white ml-12">
                 <Link
                     :href="route('welcome')"
                     class="px-4 py-2 rounded-md font-bold     transition text-center"

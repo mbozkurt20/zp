@@ -65,7 +65,7 @@ const filteredProducts = (category) => {
         class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 sticky top-0 z-50 bg-white/90 backdrop-blur shadow flex flex-col sm:flex-row sm:items-center sm:justify-between py-3"
     >
         <div class="flex items-center gap-2">
-            <span class="text-3xl">🛒</span>
+            <img class="h-10" src="/public/images/logo.png" alt="">
             <h1 class="text-xl font-semibold text-gray-800">Emisoft Menü</h1>
         </div>
 
