@@ -112,7 +112,7 @@ const filteredProducts = (category) => {
                              class="p-6 bg-white/90 border border-gray-200 rounded-lg shadow h-52">
                             <a class="bg-white" href="#">
                                 <h5 class="mb-2 text-2xl bg-white/80 font-bold tracking-tight py-1 rounded-lg text-center text-blue-950 ">
-                                   {{category.name}} Kategorisi
+                                   {{category.name}}
                                 </h5>
                             </a>
                             <p class="mb-3 font-normal text-gray-700">
