@@ -28,12 +28,14 @@ class ProductExcelImport implements ToCollection, WithHeadingRow
                     ]);
                 }
 
-                Product::create([
-                    'name' => $row['urun_adi'], // başlık isimlerine göre
-                    'category_id' => $category->id,
-                    'barcode' => $barcode,
-                    'price' => $row['fiyat_tl'],
-                ]);
+               if (!Product::where('name', $row['urun_adi'])->exists()) {
+                   Product::create([
+                       'name' => $row['urun_adi'], // başlık isimlerine göre
+                       'category_id' => $category->id,
+                       'barcode' => $barcode,
+                       'price' => $row['fiyat_tl'],
+                   ]);
+               }
             }
         }
     }
