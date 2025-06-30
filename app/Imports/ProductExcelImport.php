@@ -29,7 +29,7 @@ class ProductExcelImport implements ToCollection, WithHeadingRow
                 }
 
                if (!Product::where('name', $row['urun_adi'])->exists()) {
-                   Product::create([
+                  $product = Product::create([
                        'name' => $row['urun_adi'], // başlık isimlerine göre
                        'category_id' => $category->id,
                        'barcode' => $barcode,
@@ -40,3 +40,4 @@ class ProductExcelImport implements ToCollection, WithHeadingRow
         }
     }
 }
+

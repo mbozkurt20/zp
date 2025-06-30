@@ -12,9 +12,19 @@ class Product extends Model
     use HasFactory,SoftDeletes;
     protected static function booted()
     {
+
         static::saving(function ($product) {
             if (empty($product->slug) && !empty($product->name)) {
-                $product->slug = Str::slug($product->name);
+                $slug = Str::slug($product->name);
+                $originalSlug = $slug;
+                $count = 1;
+
+                // Benzersiz slug olana kadar kontrol et
+                while (static::where('slug', $slug)->exists()) {
+                    $slug = $originalSlug . '-' . $count++;
+                }
+
+                $product->slug = $slug;
             }
         });
     }
