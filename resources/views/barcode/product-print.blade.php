@@ -4,7 +4,7 @@
     <title>Barkod Yazdır</title>
     <style>
         @page {
-            size: 50mm 30mm;
+            size: 50mm 60mm;
             margin: 0;
         }
 
@@ -12,14 +12,14 @@
             margin: 0;
             padding: 0;
             width: 50mm;
-            height: 30mm;
+            height: 60mm;
         }
 
         body {
             display: flex;
             justify-content: center;
             align-items: center;
-            padding: 1.2mm;
+            padding: 4mm; /* Kenarlardan biraz daha boşluk */
             box-sizing: border-box;
         }
 
@@ -32,7 +32,7 @@
 </head>
 <body onload="window.print();">
 
-<img src="https://bwipjs-api.metafloor.com/?bcid=code128&text={{ $product->barcode }}&includetext=false&scaleX=3&scaleY=0.8" alt="Barcode">
+<img src="https://bwipjs-api.metafloor.com/?bcid=code128&text={{ $product->barcode }}&includetext=false&scaleX=3&scaleY=1.5" alt="Barcode">
 
 </body>
 </html>
