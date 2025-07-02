@@ -4,15 +4,15 @@
     <title>Barkod Yazdır</title>
     <style>
         @page {
-            size: 50mm 60mm;
+            size: 60mm 40mm; /* En 60mm, boy 40mm */
             margin: 0;
         }
 
         html, body {
             margin: 0;
             padding: 0;
-            width: 50mm;
-            height: 60mm;
+            width: 60mm;  /* En 60mm */
+            height: 40mm; /* Boy 40mm */
         }
 
         body {
