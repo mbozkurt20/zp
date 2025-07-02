@@ -7,18 +7,26 @@
             size: 50mm 30mm;
             margin: 0;
         }
-        body {
+
+        html, body {
             margin: 0;
             padding: 0;
-            text-align: center;
-            /* Sayfa ortalama için */
             width: 50mm;
             height: 30mm;
         }
+
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 1.2mm;
+            box-sizing: border-box;
+        }
+
         img {
-            width: 50mm;
-            height: 30mm;
-            object-fit: contain; /* Barkodun bozulmaması için */
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
         }
     </style>
 </head>
