@@ -12,7 +12,6 @@ class Product extends Model
     use HasFactory,SoftDeletes;
     protected static function booted()
     {
-
         static::saving(function ($product) {
             if (empty($product->slug) && !empty($product->name)) {
                 $slug = Str::slug($product->name);
@@ -29,6 +28,10 @@ class Product extends Model
         });
     }
 
+    public function variants()
+    {
+        return $this->hasMany(ProductVariant::class);
+    }
     public function category()
     {
         return $this->belongsTo(Category::class);
@@ -45,9 +48,6 @@ class Product extends Model
       'description',
       'price',
       'purchase_price',
-      'sales_quantity',
-      'discount',
-      'tax',
       'qr_code',
       'barcode',
       'stock_type',

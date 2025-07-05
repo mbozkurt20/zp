@@ -6,18 +6,14 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import {Head} from '@inertiajs/vue3';
 
 import {Link} from '@inertiajs/vue3';
-import ApplicationLogo from "@/Components/ApplicationLogo.vue";
 
-const products = ref([])
+const props = defineProps({
+    products: Array,
+});
+
 const categories = ref([])
 const cartStore = useCartStore()
-
 const searchQueries = reactive({})
-
-const fetchProducts = async () => {
-    const response = await axios.get('/products');
-    products.value = response.data.data
-}
 
 const fetchCategories = async () => {
     const response = await axios.get('/categories');
@@ -26,17 +22,22 @@ const fetchCategories = async () => {
 
 onMounted(() => {
     fetchCategories();
-    fetchProducts();
+
+    props.products.forEach(product => {
+        if (!product.variantId && product.variants.length > 0) {
+            product.variantId = product.variants[0].id;
+        }
+    });
 });
+
 
 const filteredProducts = (category) => {
     const query = searchQueries[category.id]?.toLowerCase() || ''
-    return products.value.filter(p =>
+    return props.products.filter(p =>
         p.category_id === category.id &&
-        (p.name.toLowerCase().includes(query) || p.description.toLowerCase().includes(query))
+        (p.name.toLowerCase().includes(query))
     )
 }
-
 </script>
 
 <template>
@@ -106,32 +107,44 @@ const filteredProducts = (category) => {
                                     alt=""
                                     class="w-36 h-36 object-cover rounded-xl mb-4 shadow-inner"
                                 />
-                                <h3 class="text-lg font-bold text-gray-800 mb-1">{{ product.name }} -   <span class="font-bold text-gray-600 mb-1">{{ product.sales_quantity }}</span> </h3>
+                                <h3 class="text-lg font-bold text-gray-800 mb-1">{{ product.name }} </h3>
 
 
-                                <div class="text-xl font-extrabold text-orange-500 mb-4">
-                                    {{ product.price }}₺
-                                </div>
+                                <div class="  mb-4">
+                                    <div class="flex flex-wrap gap-2">
+                                        <label
+                                            v-for="variant in product.variants"
+                                            :key="variant.id"
+                                            :for="variant.id"
+                                            class="cursor-pointer border rounded-lg px-4 py-2 transition-all duration-200 text-sm
+           flex items-center gap-1
+           hover:border-orange-400
+           "
+                                            :class="{
+      'bg-orange-500 text-white border-orange-500 shadow-md': product.variantId === variant.id,
+      'bg-white text-gray-800': product.variantId !== variant.id
+    }"
+                                        >
+                                            <input
+                                                type="radio"
+                                                class="hidden"
+                                                :id="variant.id"
+                                                :value="variant.id"
+                                                v-model="product.variantId"
+                                            />
+                                            <span class="font-medium">{{ variant.quantity }} {{ variant.type }}</span>
+                                            <span class="text-xs opacity-70">|</span>
+                                            <span class="font-semibold">{{ variant.price }}₺</span>
+                                        </label>
+                                    </div>
 
-                                <div class="font-semibold text-green-500 text-sm  mb-4">
-                                    Stok  {{ product.quantity > 0 ? 'Mevcut' : 'Gelince Haber Ver'}}
                                 </div>
 
                                 <div v-if="product.quantity" class="flex items-center justify-center gap-4 mt-auto">
                                     <button
-                                        @click="cartStore.decreaseFromCart(product)"
-                                        class="w-8 h-8 flex items-center justify-center bg-orange-500 hover:bg-orange-400 text-white text-lg font-bold rounded-full shadow"
-                                    >-</button>
-
-                                    <span class="font-semibold text-lg min-w-[24px] text-center">
-              {{ cartStore.cart&&cartStore.cart[product.id]?.quantity || 0 }}
-            </span>
-
-                                    <button
                                         @click="cartStore.addToCart(product)"
-
-                                        class="w-8 h-8 flex items-center justify-center bg-green-500 hover:bg-green-400 text-white text-lg font-bold rounded-full shadow"
-                                    >+</button>
+                                        class="py-1 px-1 flex items-center justify-center bg-green-500 hover:bg-green-400 text-white text-lg font-bold rounded-lg shadow"
+                                    >Sepete Ekle</button>
                                 </div>
                             </div>
                             <div class="bg-gray-100 px-4 rounded-lg py-4" v-else>

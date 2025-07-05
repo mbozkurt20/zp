@@ -36,23 +36,32 @@ class StockResource extends Resource
         return $form
             ->schema([
                 TextInput::make('name')->label('Ürün Adı')->required(),
-                TextInput::make('price')
-                    ->numeric()
-                    ->label('Fiyat')
-                    ->required(),
                 TextInput::make('purchase_price')
                     ->numeric()
                     ->label('Alış Fiyatı')
                     ->required(),
                 Forms\Components\Select::make('stock_type')->label('Stok Türü')->options([
-                    'Kilogram' => 'Kilogram',
                     'Gram' => 'Gram',
                     'Litre' => 'Litre',
                     'Adet' => 'Adet',
                 ])->required(),
 
-                TextInput::make('quantity')->minValue(1)->label('Stok Miktar')->numeric()->required(),
-
+                TextInput::make('quantity')->minValue(1)->label('Stok Miktar')->numeric()->required() ->formatStateUsing(function ($state, $record) {
+                    if ($record && $record->stock_type === 'Kilogram') {
+                        return $state / 1000;
+                    }
+                    return $state;
+                }),
+                TextInput::make('warning_quantity')
+                    ->label('Uyarı Miktarı')
+                    ->numeric()
+                    ->nullable()
+                    ->formatStateUsing(function ($state, $record) {
+                        if ($record && $record->stock_type === 'Kilogram') {
+                            return $state / 1000;
+                        }
+                        return $state;
+                    }),
             ]);
     }
 
@@ -63,10 +72,16 @@ class StockResource extends Resource
                 Tables\Columns\TextColumn::make('barcode')->label('Barkod')->sortable()->searchable(),
                 Tables\Columns\TextColumn::make('category.name')->label('Kategori')->sortable()->searchable(),
                 Tables\Columns\TextColumn::make('name')->label('Ürün')->sortable()->searchable(),
-                Tables\Columns\TextColumn::make('price')->label('Fiyat')->money('TRY', true),
                 Tables\Columns\TextColumn::make('purchase_price')->label('Alış Fiyatı')->money('TRY', true),
                 Tables\Columns\TextColumn::make('stock_type')->label('Stok Türü'),
-                Tables\Columns\TextColumn::make('quantity')->label('Miktar'),
+                Tables\Columns\TextColumn::make('quantity')
+                    ->label('Miktar')
+                    ->formatStateUsing(function ($state, $record) {
+                        if ($record->stock_type === 'Kilogram') {
+                            return $state / 1000;
+                        }
+                        return $state;
+                    }),
                 Tables\Columns\TextColumn::make('created_at')->dateTime()->label('Eklenme Tarihi'),
             ])
             ->filters([

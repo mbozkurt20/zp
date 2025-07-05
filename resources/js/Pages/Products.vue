@@ -6,7 +6,7 @@ import {useCartStore} from '../Stores/cartStore'
 import { Link } from '@inertiajs/vue3';
 
 
-defineProps({
+const props = defineProps({
     products: Array,
 
     canLogin: {
@@ -30,6 +30,14 @@ defineProps({
 });
 
 const cartStore = useCartStore()
+
+onMounted(() => {
+    props.products.forEach(product => {
+        if (!product.variantId && product.variants.length > 0) {
+            product.variantId = product.variants[0].id;
+        }
+    });
+});
 </script>
 
 <template>
@@ -88,14 +96,14 @@ const cartStore = useCartStore()
         </h2>
 
         <div class="flex flex-col md:flex-row text-sm text-gray-800 gap-5 mt-1">
-            <div><span class="font-semibold">Toplam Ürün:</span> <strong
+            <!--div><span class="font-semibold">Toplam Ürün:</span> <strong
                 class="text-green-600">{{ cartStore.totalProduct }}</strong>
-            </div>
+            </div-->
 
-            <div>
+            <!--div>
                 <span class="font-semibold">Toplam Tutar:</span> <strong
                 class="text-green-600">{{ cartStore.totalAmount }}₺</strong>
-            </div>
+            </div-->
 
             <div class="ml-auto gap-4 space-x-4">
                 <Link
@@ -118,20 +126,40 @@ const cartStore = useCartStore()
                     v-if="products.length"
                     class="bg-white border border-gray-200 rounded-2xl shadow-md hover:shadow-xl transition-shadow duration-300 p-6 flex flex-col items-center text-center"
                 >
+
                     <img
                         :src="`/storage/${product.image}`"
                         alt=""
                         class="w-36 h-36 object-cover rounded-xl mb-4 shadow-inner"
                     />
-                    <h3 class="text-lg font-bold text-blue-950 mb-1">{{ product.name }} -  <span class=" font-bold text-gray-600 mb-1">{{ product.sales_quantity }}</span></h3>
+                    <h3 class="text-lg font-bold text-blue-950 mb-1">{{ product.name }}</h3>
 
-
-                    <div class="text-xl font-extrabold text-orange-500 mb-4">
-                        {{ product.price }}₺
-                    </div>
-
-                    <div class="font-semibold text-green-500 text-sm  mb-4">
-                        Stok  {{ product.quantity > 0 ? 'Mevcut' : 'Gelince Haber Ver'}}
+                    <div class="space-y-2  mb-4">
+                        {{product.variantId}}
+                        <label
+                            v-for="variant in product.variants"
+                            :key="variant.id"
+                            :for="variant.id"
+                            class="cursor-pointer border rounded-lg px-4 py-2 transition-all duration-200 text-sm
+           flex items-center gap-1
+           hover:border-orange-400
+           "
+                            :class="{
+      'bg-orange-500 text-white border-orange-500 shadow-md': product.variantId === variant.id,
+      'bg-white text-gray-800': product.variantId !== variant.id
+    }"
+                        >
+                            <input
+                                type="radio"
+                                class="hidden"
+                                :id="variant.id"
+                                :value="variant.id"
+                                v-model="product.variantId"
+                            />
+                            <span class="font-medium">{{ variant.quantity }} {{ variant.type }}</span>
+                            <span class="text-xs opacity-70">|</span>
+                            <span class="font-semibold">{{ variant.price }}₺</span>
+                        </label>
                     </div>
 
                     <Link v-if="!isLogin"
@@ -141,20 +169,11 @@ const cartStore = useCartStore()
                         Giriş Yap
                     </Link>
 
-                    <div v-if="product.quantity&&isLogin" class="flex items-center justify-center gap-4 mt-auto">
-                        <button
-                            @click="cartStore.decreaseFromCart(product)"
-                            class="w-8 h-8 flex items-center justify-center bg-orange-500 hover:bg-orange-400 text-white text-lg font-bold rounded-full shadow"
-                        >-</button>
-
-                        <span class="font-semibold text-lg min-w-[24px] text-center">
-              {{ cartStore.cart && cartStore.cart[product.id]?.quantity || 0 }}
-            </span>
-
+                    <div v-if="isLogin&&product.quantity" class="flex items-center justify-center gap-4 mt-auto">
                         <button
                             @click="cartStore.addToCart(product)"
-                            class="w-8 h-8 flex items-center justify-center bg-green-500 hover:bg-green-400 text-white text-lg font-bold rounded-full shadow"
-                        >+</button>
+                            class="py-1 px-1 flex items-center justify-center bg-green-500 hover:bg-green-400 text-white text-lg font-bold rounded-lg shadow"
+                        >Sepete Ekle</button>
                     </div>
                 </div>
 

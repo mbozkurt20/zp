@@ -62,8 +62,8 @@ onMounted(fetchProducts)
                         <div class="  w-full  sm:w-3/4 bg-white px-10 py-10">
                             <div class="flex justify-between border-b pb-8">
                                 <h1 class="font-semibold text-3xl">Alışveriş Sepeti</h1>
-                                <h2 class="font-semibold text-xl">Sepetinizde <span class="text-orange-600">{{cartStore.totalProduct}} Ürün</span> Bulunuyor.</h2>
                             </div>
+
                             <div v-for="item in cartStore.cart" class="border-b border-orange-200 md:flex items-strech py-8 md:py-10 lg:py-8 border-t">
 
                                 <div class="md:w-4/12 2xl:w-1/4 w-full">
@@ -73,17 +73,17 @@ onMounted(fetchProducts)
                                 <div class="md:pl-3 md:w-8/12 2xl:w-3/4 flex flex-col justify-center">
                                     <!--p class="text-xs leading-3 text-gray-800 md:pt-0 pt-4">RF293</p-->
                                     <div class="mx-auto text-center w-full">
-                                        <p class="text-base font-black leading-none text-blue-950 py-4">{{item.name}} - <span class=" font-bold text-gray-600 mb-1">{{ item.sales_quantity }}</span></p>
+                                        <p class="text-base font-black leading-none text-blue-950 py-4">{{item.name}} {{item.id }} {{item.variantId}}</p>
 
                                         <div class="text-xl font-extrabold text-orange-500 mb-4">
-                                            {{ item.price }}₺
+                                            <div v-for="variant in item.variants">
+                                                <div v-if="variant.id === item.variantId">
+                                                   <span class="text-sm"> {{ variant.quantity }} {{ variant.type }}</span> | {{ variant.price }}₺
+                                                </div>
+                                            </div>
                                         </div>
 
                                         <p class="text-sm font-black leading-none text-gray-500 pb-4">{{item.description}}</p>
-
-                                        <div class="font-semibold text-green-500 text-sm  mb-4">
-                                            Stok  {{ item.quantity > 0 ? 'Mevcut' : 'Gelince Haber Ver'}}
-                                        </div>
 
                                         <div class="flex mx-auto justify-center gap-4 mt-4">
                                             <button
@@ -91,7 +91,7 @@ onMounted(fetchProducts)
                                                 class="px-3 py-1 bg-orange-500 text-white hover:bg-orange-400 rounded-full shadow"
                                             >-</button>
                                             <span class="font-semibold text-lg">
-                                                {{ cartStore.cart[item.id]?.quantity || 0 }}
+                                                {{ item.quantity || 0 }}
                                             </span>
                                             <button
                                                 @click="cartStore.addToCart(item)"
@@ -118,9 +118,14 @@ onMounted(fetchProducts)
                             <h1 class="font-semibold text-3xl border-b pb-8">Sepet Özeti</h1>
                             <div class=" justify-between mt-10 mb-5">
                                 <div class="" v-for="item in cartStore.cart">
-                                    <div class="mb-2 gap-2 flex border-b border-gray-300">
-                                        <span>{{item.name}} <strong>x {{item.quantity}}</strong></span>
-                                        <span class="ml-auto font-semibold">{{item.price}}₺ </span>
+                                    <div class="grid border-b border-gray-300">
+                                        <span class="">{{item.name}} <strong>x {{item.quantity}}</strong></span>
+
+                                        <div class="ml-auto flex justify-end font-semibold" v-for="variant in item.variants" :key="variant.id">
+                                            <div v-if="variant.id === item.variantId">
+                                                {{ variant.price }}₺
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>

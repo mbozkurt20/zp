@@ -47,7 +47,7 @@ class OrderResource extends Resource
                Tables\Columns\TextColumn::make('barcode')->label('Barkod')->sortable()->searchable(),
                Tables\Columns\TextColumn::make('creator.name')->label('Ödeme Alan Kişi')->sortable()->searchable(),
                 Tables\Columns\TextColumn::make('user.name')->label('Müşteri'),
-                Tables\Columns\TextColumn::make('total')->label('Toplam Tutar'),
+                Tables\Columns\TextColumn::make('total')->label('Toplam Tutar')->money('try'),
                 Tables\Columns\TextColumn::make('created_at')->label('Sipariş Tarihi')->sortable(),
                 Tables\Columns\TextColumn::make('is_ready')->label('Sipariş Durumu')->formatStateUsing(fn ($state) => $state ? 'Hazır' : 'Hazırlanıyor...'),
             ])  ->recordUrl(fn () => null)

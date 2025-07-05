@@ -20,14 +20,9 @@ return new class extends Migration
             $table->string('image')->nullable();
             $table->json('images')->nullable();
             $table->text('description')->nullable();
-            $table->decimal('price', 8, 2)->nullable();
-            $table->decimal('discount', 8, 2)->nullable();
-            $table->decimal('tax', 8, 2)->nullable();
-            $table->tinyText('qr_code')->nullable();
-
-            $table->string('stock_type')->nullable();
-            $table->integer('quantity')->nullable();
-            $table->integer('warning_quantity')->nullable();
+            $table->string('stock_type')->nullable(); //gram adet
+            $table->string('quantity')->nullable(); // miktar
+            $table->string('warning_quantity')->nullable(); // uyarı miktarı
             $table->timestamps();
             $table->softDeletes();
         });

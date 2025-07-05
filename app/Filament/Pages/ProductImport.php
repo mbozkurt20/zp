@@ -32,7 +32,12 @@ class ProductImport extends Page implements Forms\Contracts\HasForms
                     ->label('Excel Dosyası')
                     ->disk('local')
                     ->directory('imports')
-                    ->acceptedFileTypes(['application/vnd.ms-excel', '.xls'])
+                    ->acceptedFileTypes([
+                        'application/vnd.ms-excel',            // .xls
+                        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', // .xlsx
+                        '.xls',
+                        '.xlsx'
+                    ])
                     ->required()
             ])
             ->statePath('data');

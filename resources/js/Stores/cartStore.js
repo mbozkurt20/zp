@@ -17,7 +17,7 @@ export const useCartStore = defineStore('cart', () => {
 
   const channel = pusher.subscribe('cart-channel') // kanal ismi
     channel.bind(`clear-cart-${userId}`, () => { // event ismi
-        clearCart()
+        cart.value = {}
 
         toast("Sepetiniz Temizlendi", {
             "theme": "dark",
@@ -28,41 +28,56 @@ export const useCartStore = defineStore('cart', () => {
 
     const addToCart = async (product) => {
         console.log({product:product})
-        if (!cart.value[product.id]) {
-            await axios.post('/add-product', { cart: JSON.stringify(cart.value), productId: product.id }).then(res => {
-                console.log({res: res})
-                cart.value[product.id] = { ...product, quantity: 1 }
-            }).catch(err => {
-                console.log({error1: err})
+        const variantId = product.variantId;
+        const key = `${product.id}-${variantId}`;
 
-                toast(err.response.data.message, {
-                    "theme": "dark",
-                    "type": "warning",
-                    "dangerouslyHTMLString": true
-                })
-            })
+        if (cart.value[key]) {
+            // quantity arttır
+            cart.value[key].quantity++;
         } else {
-            console.log({product:product})
-            await axios.post('/add-product', { cart: JSON.stringify(cart.value), productId: product.id }).then(res => {
-                console.log({res: res})
-                cart.value[product.id].quantity++
+            // yeni ürün ekle
+            cart.value[key] = {
+                ...product,
+                id: product.id,
+                variantId,
+                quantity: 1,
+            };
+        }
 
-            }).catch(err => {
-                console.log({error1: err})
-                toast(err.response.data.message, {
-                    "theme": "dark",
-                    "type": "warning",
-                    "dangerouslyHTMLString": true
-                })
-            })
+        cart.value = { ...cart.value };
+
+        try {
+            const res = await axios.post('/add-product', {
+                cart: JSON.stringify(cart.value),
+                productId: product.id,
+                variantId: variantId
+            });
+
+            toast(res?.data?.message || 'Bir hata oluştu', {
+                theme: "dark",
+                type: "success",
+                dangerouslyHTMLString: true
+            });
+            console.log({ res });
+        } catch (err) {
+            toast(err.response?.data?.message || 'Bir hata oluştu', {
+                theme: "dark",
+                type: "warning",
+                dangerouslyHTMLString: true
+            });
         }
     }
 
     const decreaseFromCart = async (product) => {
-        if (cart.value[product.id]) {
-            cart.value[product.id].quantity--
-            if (cart.value[product.id].quantity <= 0) {
-                delete cart.value[product.id]
+        console.log({sf:product})
+        const variantId = product.variantId;
+        const key = `${product.id}-${variantId}`;
+
+        console.log({key: key})
+        if (cart.value[key]) {
+            cart.value[key].quantity--;
+            if (cart.value[key].quantity <= 0) {
+                delete cart.value[key];
             }
 
             try {
@@ -117,7 +132,13 @@ console.log({sepet:res.data})
     )
 
     const totalAmount = computed(() =>
-        cart.value ? Object.values(cart.value).reduce((sum, item) => sum + item.quantity * item.price, 0) : null
+        cart.value
+            ? Object.values(cart.value).reduce((sum, item) => {
+                const variant = item.variants?.find(v => v.id === item.variantId)
+                const price = variant ? parseFloat(variant.price) : 0
+                return sum + item.quantity * price
+            }, 0)
+            : 0
     )
 
   loadCart()

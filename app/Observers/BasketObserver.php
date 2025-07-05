@@ -7,6 +7,7 @@ use App\Models\Basket;
 use App\Models\Order;
 use App\Events\NewModelCreated;
 use App\Models\Product;
+use App\Models\ProductVariant;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
 
@@ -27,25 +28,35 @@ class BasketObserver
         $basket = Basket::find($basket->id);
 
         if (!Order::where('basket_id', $basket->id)->exists() && $basket->basketItems->count() && $basket->is_completed ) {
+            $groupedItems = $basket->basketItems->groupBy('product_id');
 
-            $total = $basket->basketItems->sum(function($item) {
-              $product = Product::find($item->product_id);
+            $total = 0;
 
-              if ($product->stock_type == 'Kilogram' || $product->stock_type == 'Gram'){
-                  $gr = explode(' ',$product->sales_quantity);
+            foreach ($groupedItems as $productId => $items) {
+                $product = Product::find($productId);
 
-                  $product->update([
-                      'quantity' => $product->quantity - ((int)$gr[0] * $item->quantity),
-                  ]);
+                $totalQuantityToSubtract = 0;
 
-              }else{
-                  $product->update([
-                      'quantity' => $product->quantity - $item->quantity
-                  ]);
-              }
+                foreach ($items as $item) {
+                    $variant = ProductVariant::find($item->product_variant_id);
 
-              return $product->price * $item->quantity;
-            });
+                    if ($variant->type == 'Kilogram') {
+                        $calculateQuantity = $item->quantity * ($variant->quantity * 1000);
+                    } else {
+                        $calculateQuantity = $item->quantity * $variant->quantity;
+                    }
+
+                    $totalQuantityToSubtract += $calculateQuantity;
+
+                    // Toplam fiyatı da burada biriktir
+                    $total += $variant->price * $item->quantity;
+                }
+
+                // Ürünün stoğunu tek seferde güncelle
+                $product->update([
+                    'quantity' => $product->quantity - $totalQuantityToSubtract,
+                ]);
+            }
 
             try {
                 $order = Order::create([

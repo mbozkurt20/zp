@@ -20,7 +20,7 @@ Route::get('/', function () {
 })->name('welcome');
 
 Route::get('/category/{id}', function ($id) {
-    $products = Product::where('category_id', $id)->get();
+    $products = Product::where('category_id', $id)->with('variants')->get();
 
     return Inertia::render('Products', [
         'products' => $products,
@@ -33,9 +33,12 @@ Route::get('/category/{id}', function ($id) {
 })->name('products');
 
 Route::get('/dashboard', function () {
+    $products = Product::with('variants')->get();
 
+    return Inertia::render('Dashboard',[
+        'products' => $products,
+    ]);
 
-    return Inertia::render('Dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::get('/basket', function () {
@@ -65,6 +68,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/order', [\App\Http\Controllers\BasketController::class, 'orders']);
     Route::get('/cart', [\App\Http\Controllers\BasketController::class, 'getCart']);
     Route::post('/add-product', [\App\Http\Controllers\BasketController::class, 'addProduct']);
+    Route::post('/is-product', [\App\Http\Controllers\BasketController::class, 'isProductStock']);
     Route::post('/remove-product', [\App\Http\Controllers\BasketController::class, 'removeProduct']);
     Route::post('/clear-cart', [\App\Http\Controllers\BasketController::class, 'clearCart']);
 

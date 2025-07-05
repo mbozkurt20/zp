@@ -13,10 +13,11 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Actions\BulkAction;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Filament\Tables\Actions\Action;
 use Illuminate\Support\Collection;
+use pxlrbt\FilamentExcel\Actions\Tables\ExportAction;
+use pxlrbt\FilamentExcel\Actions\Tables\ExportBulkAction;
+use pxlrbt\FilamentExcel\Exports\ExcelExport;
 
 class ProductResource extends Resource
 {
@@ -43,7 +44,7 @@ class ProductResource extends Resource
                     ->label('Vitrin Görseli')
                     ->directory('products')
                     ->required()
-                    ->acceptedFileTypes(['image/jpeg','image/jpg', 'image/webp','image/avif','image/png', 'application/pdf']),
+                    ->acceptedFileTypes(['image/jpeg','image/jpg', 'image/webp','image/avif','image/png',]),
                 FileUpload::make('images')
                     ->label('Diğer Görseller')
                     ->directory('products')
@@ -51,13 +52,9 @@ class ProductResource extends Resource
                     ->enableOpen()
                     ->nullable()
                     ->acceptedFileTypes(['image/jpeg','image/jpg', 'image/webp','image/avif','image/png', 'application/pdf']),
-                TextInput::make('name')->label('Ürün Adı')->required(),
-                Forms\Components\Textarea::make('description')->label('Ürün Açıklaması')->required(),
-                TextInput::make('price')
-                    ->numeric()
-                    ->label('Fiyat')
-                    ->required(),
+                Forms\Components\Select::make('category_id')->label('Kategori')->options(Category::pluck('name','id'))->required(),
 
+                TextInput::make('name')->label('Ürün Adı')->required(),
                 Forms\Components\TextInput::make('barcode')
                     ->label('Barkod')
                     ->default(function () {
@@ -67,29 +64,59 @@ class ProductResource extends Resource
                         return $barcode;
                     })
                     ->required(),
-                Forms\Components\Select::make('sales_quantity')->label('Ürün Satış Miktarı')->options([
-                    '100 Gram' => '100 Gram',
-                    '125 Gram' => '125 Gram',
-                    '150 Gram' => '150 Gram',
-                    '200 Gram' => '200 Gram',
-                    '250 Gram' => '250 Gram',
-                    '500 Gram' => '500 Gram',
-                    '1 KG' => '1 KG',
-                ]),
-                TextInput::make('discount')
-                    ->numeric()
-                    ->default(0.00)
-                    ->label('İndirim Tutarı')
-                    ->required(),
+
                 Forms\Components\Select::make('stock_type')->label('Stok Türü')->options([
                     'Kilogram' => 'Kilogram',
                     'Gram' => 'Gram',
                     'Litre' => 'Litre',
                     'Adet' => 'Adet',
                 ])->required(),
-                Forms\Components\Select::make('category_id')->label('Kategori')->options(Category::pluck('name','id'))->required(),
-                TextInput::make('quantity')->minValue(1)->label('Stok Miktar')->numeric()->required(),
-                TextInput::make('warning_quantity')->label('Uyarı Miktarı')->numeric()->nullable(),
+
+                TextInput::make('quantity')
+                    ->label('Stok Miktar')
+                    ->numeric()
+                    ->required()
+                    ->formatStateUsing(function ($state, $record) {
+                        if ($record && $record->stock_type === 'Kilogram') {
+                            return $state / 1000;
+                        }
+                        return $state;
+                    }),
+
+                TextInput::make('warning_quantity')
+                    ->label('Uyarı Miktarı')
+                    ->numeric()
+                    ->nullable()
+                    ->formatStateUsing(function ($state, $record) {
+                        if ($record && $record->stock_type === 'Kilogram') {
+                            return $state / 1000;
+                        }
+                        return $state;
+                    }),
+
+                Forms\Components\Textarea::make('description')->label('Ürün Açıklaması'),
+
+                Forms\Components\Repeater::make('variants')
+                    ->label('Ürün Varyantları')
+                    ->relationship('variants') // Eloquent ilişkisi varsa direkt bağlanabilir.
+                    ->schema([
+                        Forms\Components\Select::make('type')
+                            ->label('Stok Türü')
+                            ->options([
+                                'Kilogram' => 'Kilogram',
+                                'Gram' => 'Gram',
+                                'Litre' => 'Litre',
+                                'Adet' => 'Adet',
+                            ])
+                            ->required(),
+
+                        TextInput::make('quantity')->label('Miktar')->numeric()->required(),
+                        TextInput::make('price')->label('Fiyat')->numeric()->required(),
+                    ])
+                    ->columns(3)
+                    ->orderable()
+                    ->createItemButtonLabel('Varyant Ekle')
+                    ->collapsible(),
             ]);
     }
 
@@ -100,10 +127,22 @@ class ProductResource extends Resource
                 Tables\Columns\TextColumn::make('barcode')->label('Barkod')->sortable()->searchable(),
                 Tables\Columns\TextColumn::make('category.name')->label('Kategori')->sortable()->searchable(),
                 Tables\Columns\TextColumn::make('name')->label('Ürün')->sortable()->searchable(),
-                Tables\Columns\TextColumn::make('price')->label('Fiyat')->money('TRY', true),
-                Tables\Columns\TextColumn::make('discount')->label('İndirim Tutarı')->money('TRY', true),
+                Tables\Columns\TextColumn::make('variants_price')
+                    ->label('İlk Varyant Fiyatı')
+                    ->getStateUsing(function ($record) {
+                        return optional($record->variants->first())->price;
+                    })
+                    ->money('TRY', true),
+
                 Tables\Columns\TextColumn::make('stock_type')->label('Stok Türü'),
-                Tables\Columns\TextColumn::make('quantity')->label('Miktar'),
+                Tables\Columns\TextColumn::make('quantity')
+                    ->label('Miktar')
+                    ->formatStateUsing(function ($state, $record) {
+                        if ($record->stock_type === 'Kilogram') {
+                            return $state / 1000;
+                        }
+                        return $state;
+                    }),
                 Tables\Columns\TextColumn::make('created_at')->dateTime()->label('Eklenme Tarihi'),
             ])
             ->filters([
@@ -120,6 +159,9 @@ class ProductResource extends Resource
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
+                    ExportBulkAction::make('export')
+                        ->label('Dışa Aktar')
+                        ->icon('heroicon-o-arrow-down-tray'),
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
                 BulkAction::make('bulkPrint')

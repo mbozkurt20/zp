@@ -11,6 +11,7 @@ use App\Models\BasketItem;
 use App\Models\Category;
 use App\Models\Order;
 use App\Models\Product;
+use App\Models\ProductVariant;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -58,13 +59,57 @@ class BasketController extends Controller
         return response()->json(['data' => $categories]);
     }
 
+    public function isProductStock(Request $request)
+    {
+        $userId = Auth::id();
+        $cart = json_decode($request->cart);
+        $productData = Product::find($request->productId);
+
+        // Cart JSON'unu array olarak decode et
+        $products = json_decode($request->cart, true); // artık array
+
+// Eğer key'li associative array varsa, sadece value'ları al
+        $products = array_values($products);
+
+// Aynı ürün ID'ye sahip olanları filtrele
+        $sameProductItems = array_filter($products, function($product) use ($productData) {
+            return $product['id'] == $productData->id;
+        });
+
+// Toplam gram hesabı
+        $totalGram = array_sum(array_map(function($product) {
+            // Variant'ı bul (cart içinden gelen variantId ile)
+            $variant = collect($product['variants'])->firstWhere('id', $product['variantId']);
+
+            if (!$variant) {
+                return 0; // variant yoksa 0 say
+            }
+
+            $variantQuantity = $variant['quantity'];
+
+            if ($variant['type'] == 'Kilogram') {
+                $variantQuantity = $variantQuantity * 1000;
+            }
+
+            return $product['quantity'] * $variantQuantity;
+        }, $sameProductItems));
+
+// Stok kontrolü
+        if ($productData->quantity < $totalGram) {
+            return response()->json([
+                'message' => "Üzgünüz, {$productData->name} Stoğu Yetersiz"
+            ], 400);
+        }
+
+        return response()->json(['status' => true]);
+    }
     public function addProduct(Request $request)
     {
         $userId = Auth::id();
         $cart = json_decode($request->cart);
-        $productD = Product::find($request->productId);
+        $productData = Product::find($request->productId);
+        $variantData = ProductVariant::find($request->variantId);
 
-// Basket kontrol ve oluşturma
         $basket = Basket::where('user_id', $userId)
             ->where('is_completed', false)
             ->where('is_shopping', true)
@@ -78,41 +123,52 @@ class BasketController extends Controller
             ]);
         }
 
-// Sepeti JSON olarak güncelle (stok kontrolünden sonra istersen bunu da yapabilirsin)
         $basket->cart = json_encode($cart);
 
-// Önce tüm stokları kontrol et
-        foreach ($cart as $item) {
-          if ($productD->id == $item->id) {
-              $quantity = $item->quantity;
+        // Cart JSON'unu array olarak decode et
+        $products = json_decode($request->cart, true); // artık array
 
-              if ($item->sales_quantity) {
-                  $gr = (int) explode(" ", $item->sales_quantity)[0];
-                  $grQuantity = $quantity * $gr;
+// Eğer key'li associative array varsa, sadece value'ları al
+        $products = array_values($products);
 
-                  if ($grQuantity > $productD->quantity-$gr) {
-                      $sf = $item->quantity*$gr;
-                      return response()->json([
-                          'message' => "Üzgünüz, {$item->name} Stoğu Yetersiz"
-                      ], 400);
-                  }
-              } else {
-                  if ($quantity > $productD->quantity-1) {
-                      return response()->json([
-                          'message' => "Üzgünüz, {$item->name} Stoğu Yetersiz"
-                      ], 400);
-                  }
-              }
-          }
+// Aynı ürün ID'ye sahip olanları filtrele
+        $sameProductItems = array_filter($products, function($product) use ($productData) {
+            return $product['id'] == $productData->id;
+        });
+
+// Toplam gram hesabı
+        $totalGram = array_sum(array_map(function($product) {
+            // Variant'ı bul (cart içinden gelen variantId ile)
+            $variant = collect($product['variants'])->firstWhere('id', $product['variantId']);
+
+            if (!$variant) {
+                return 0; // variant yoksa 0 say
+            }
+
+            $variantQuantity = $variant['quantity'];
+
+            if ($variant['type'] == 'Kilogram') {
+                $variantQuantity = $variantQuantity * 1000;
+            }
+
+            return $product['quantity'] * $variantQuantity;
+        }, $sameProductItems));
+
+// Stok kontrolü
+        if ($productData->quantity < $totalGram) {
+            return response()->json([
+                'message' => "Üzgünüz, {$productData->name} Stoğu Yetersiz"
+            ], 400);
         }
 
-// Stok kontrolünden geçti, sepeti kaydet
-        $basket->update();
+        // Stok kontrolünden geçti, sepeti kaydet
+         $basket->update();
 
-// BasketItem güncelleme / ekleme
+        // BasketItem güncelleme / ekleme
         foreach ($cart as $item) {
             $basketItem = BasketItem::where('basket_id', $basket->id)
                 ->where('product_id', $item->id)
+                ->where('product_variant_id', $item->variantId)
                 ->first();
 
             if ($basketItem) {
@@ -122,12 +178,13 @@ class BasketController extends Controller
                 BasketItem::create([
                     'basket_id' => $basket->id,
                     'product_id' => $item->id,
+                    'product_variant_id' => $item->variantId,
                     'quantity' => $item->quantity,
                 ]);
             }
         }
 
-        return response()->json(['message' => 'Sepet başarıyla güncellendi']);
+        return response()->json(['message' => 'Ürün Sepete Eklendi']);
     }
 
     public function clearCart()
@@ -138,7 +195,7 @@ class BasketController extends Controller
             ->select('id','cart')
             ->first();
 
-        $activeBasket->cart = null;
+        $activeBasket->cart = [];
 
         $activeBasket->update();
 

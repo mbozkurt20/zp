@@ -7,6 +7,8 @@ use App\Filament\Resources\BasketResource\RelationManagers;
 use App\Listeners\BasketUpdatedWithPaymentType;
 use App\Models\Basket;
 use App\Models\Order;
+use App\Models\Product;
+use App\Models\ProductVariant;
 use Filament\Forms;
 use Filament\Forms\Components\Toggle;
 use Filament\Forms\Form;
@@ -70,7 +72,7 @@ class BasketResource extends Resource
                 Tables\Columns\TextColumn::make('total_price')->label('Toplam Tutar')
                     ->getStateUsing(function ($record) {
                         return $record->basketItems->sum(function ($item) {
-                            return (optional($item->product)->price ?? 0) * $item->quantity;
+                            return $item->quantity * $item->productVariant->price;
                         });
                     })
                     ->money('try'),
