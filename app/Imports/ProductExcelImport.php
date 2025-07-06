@@ -40,7 +40,7 @@ class ProductExcelImport implements ToCollection, WithHeadingRow
 
                         $productVariant = ProductVariant::create([
                             'product_id' => $product->id,
-                            'price' => (float)str_replace('₺', '', $row['alis_fiyati']),
+                            'price' => (float)str_replace('₺', '', $row['fiyat']),
                             'type' => $row['stok_turu'],
                             'quantity' => 1,
                             'sort' => 1,

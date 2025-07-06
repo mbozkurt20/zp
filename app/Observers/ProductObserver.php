@@ -28,8 +28,8 @@ class ProductObserver
     {
         Log::info('Girdi 1');
         if ($product->stock_type== 'Kilogram'){
-            $product->quantity = $product->quantity * 1000;
-            $product->warning_quantity = $product->warning_quantity * 1000;
+            $product->quantity = (float) $product->quantity * 1000;
+            $product->warning_quantity = (float) $product->warning_quantity * 1000;
             $product->save();
         }
     }
@@ -41,8 +41,8 @@ class ProductObserver
     public function updating(Product $product): void
     {
         if ($product->stock_type == 'Kilogram'){
-            $product->quantity = (int)$product->quantity * 1000;
-            $product->warning_quantity = (int)$product->warning_quantity * 1000;
+            $product->quantity = (float)$product->quantity * 1000;
+            $product->warning_quantity = (float)$product->warning_quantity * 1000;
         }
     }
 

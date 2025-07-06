@@ -53,7 +53,8 @@ class BasketObserver
                 }
 
                 // Ürünün stoğunu tek seferde güncelle
-                $product->update([
+
+                \Illuminate\Support\Facades\DB::table('products')->where('id', $productId)->update([
                     'quantity' => $product->quantity - $totalQuantityToSubtract,
                 ]);
             }

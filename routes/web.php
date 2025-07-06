@@ -4,6 +4,7 @@ use App\Http\Controllers\ProfileController;
 use App\Models\Basket;
 use App\Models\Order;
 use App\Models\Product;
+use App\Models\ProductVariant;
 use Illuminate\Foundation\Application;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -75,82 +76,86 @@ Route::middleware('auth')->group(function () {
     Route::get('/checkout/basket/{id}', [\App\Http\Controllers\BasketController::class, 'isCheckout']);
     Route::get('/active/basket/', [\App\Http\Controllers\BasketController::class, 'activeBasket']);
 
-    Route::post('/scan-product', function (Request $request) {
+    Route::get('/scan-product', function (Request $request) {
         $barcode = $request->barcode;
-        $quantity = max(1, (int) $request->quantity);
 
-        $product = Product::where('barcode', $barcode)->first();
+        $product = Product::where('barcode', $barcode)->with('variants')->first();
 
         if (!$product) {
             return response()->json(['message' => 'Ürün Bulunamadı'], 404);
         }
 
-        $cart = session('cart', []);
-        $existingIndex = collect($cart)->search(fn($item) => $item['id'] === $product->id);
-
-        if ($existingIndex !== false) {
-            $cart[$existingIndex]['quantity'] += $quantity;
-        } else {
-            $cart[] = [
+        return response()->json([
+            'product' => [
                 'id' => $product->id,
-                'tax' => $product->tax,
                 'name' => $product->name,
                 'image' => $product->image,
-                'price' => $product->price,
-                'barcode' => $product->barcode,
-                'qr_code' => $product->qr_code,
-                'discount' => $product->discount,
-                'quantity' => $quantity,
-                'created_at' => $product->discount,
-                'stock_type' => $product->discount,
-                'category_id' => $product->discount,
-                'description' => $product->discount,
-                'category_name' => $product->discount,
-                'warning_quantity' => $product->warning_quantity,
-            ];
-        }
-
-        session(['cart' => $cart]);
-        return response()->json(['cart' => $cart]);
-    });
-
-    Route::post('/update-cart-quantity', function (Request $request) {
-        $cart = session('cart', []);
-        if (isset($cart[$request->index])) {
-            $cart[$request->index]['quantity'] = max(1, (int) $request->quantity);
-        }
-        session(['cart' => $cart]);
-        return response()->json(['cart' => $cart]);
-    });
-
-    Route::post('/remove-from-cart', function (Request $request) {
-        $cart = session('cart', []);
-        unset($cart[$request->index]);
-        $cart = array_values($cart);
-        session(['cart' => $cart]);
-        return response()->json(['cart' => $cart]);
+                'variants' => $product->variants->map(function ($variant) {
+                    return [
+                        'id' => $variant->id,
+                        'type' => $variant->type,
+                        'price' => $variant->price,
+                        'quantity' => $variant->quantity,
+                    ];
+                })
+            ]
+        ]);
     });
 
     Route::post('/checkout', function (Request $request) {
         $cart = $request->cart;
         $payment = $request->payment;
 
+/*
         $basket = \App\Models\Basket::create([
             'user_id' => auth()->id(),
             'is_shopping' => 0,
             'is_completed' => 1,
             'cart' => json_encode($cart),
             'payment_type' => $payment,
+            'is_checkout' => 1,
         ]);
 
-        $total = 0;
         foreach ($cart as $item) {
-            $total += $item['quantity'] * $item['price'];
-
             \App\Models\BasketItem::create([
                 'basket_id' => $basket->id,
                 'product_id' => $item['id'],
+                'product_variant_id' => $item['variantId'],
                 'quantity' => $item['quantity'],
+            ]);
+        }
+
+*/
+
+        $basket = Basket::find(4);
+        $groupedItems = $basket->basketItems->groupBy('product_id');
+
+        $total = 0;
+
+        foreach ($groupedItems as $productId => $items) {
+            $product = Product::find($productId);
+
+            $totalQuantityToSubtract = 0;
+
+            foreach ($items as $item) {
+                $variant = ProductVariant::find($item->product_variant_id);
+
+                if ($variant->type == 'Kilogram') {
+                    $calculateQuantity = $item->quantity * ($variant->quantity * 1000);
+                } else {
+                    $calculateQuantity = $item->quantity * $variant->quantity;
+                }
+
+                $totalQuantityToSubtract += $calculateQuantity;
+
+                // Toplam fiyatı da burada biriktir
+                $total += $variant->price * $item->quantity;
+            }
+
+            // Ürünün stoğunu tek seferde güncelle
+
+            \Illuminate\Support\Facades\DB::table('products')->where('id', $productId)->update([
+                'quantity' => $product->quantity - $totalQuantityToSubtract,
             ]);
         }
 
@@ -164,7 +169,7 @@ Route::middleware('auth')->group(function () {
             'creator_id' => auth()->id(),
             'user_id' => auth()->id(),
             'basket_id' => $basket->id,
-            'barocde' => $barcode,
+            'barcode' => $barcode,
             'total' => $total,
             'is_paid' => 1,
             'is_ready' => 0,

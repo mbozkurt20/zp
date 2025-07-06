@@ -74,13 +74,16 @@ class ProductResource extends Resource
 
                 TextInput::make('quantity')
                     ->label('Stok Miktar')
-                    ->numeric()
                     ->required()
                     ->formatStateUsing(function ($state, $record) {
                         if ($record && $record->stock_type === 'Kilogram') {
                             return $state / 1000;
                         }
                         return $state;
+                    })
+                    ->dehydrateStateUsing(function ($state) {
+                        // Virgülü noktaya çevir ve float yap
+                        return floatval(str_replace(',', '.', $state));
                     }),
 
                 TextInput::make('warning_quantity')

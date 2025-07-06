@@ -68,15 +68,15 @@
     @php $total = 0; @endphp
     @foreach($order->basket->basketItems as $item)
         @php
-            $lineTotal = $item->product->price * $item->quantity;
+            $lineTotal = $item->productVariant->price * $item->quantity;
             $total += $lineTotal;
         @endphp
         <div class="d-flex justify-content-between align-items-center product-item">
             <div style="flex: 1;">
-                {{ $item->product->name }} x {{ $item->quantity }} {{ $item->product->stock_type }}
+                {{ $item->product->name }} x {{ $item->productVariant->quantity }} {{ $item->productVariant->type }}
             </div>
             <div style="min-width: 80px; text-align: right;">
-                <small>{{ number_format($item->product->price, 2) }}₺ x {{ $item->quantity }}</small><br>
+                <small>{{ number_format($item->productVariant->price, 2) }}₺ x {{ $item->quantity }}</small><br>
                 <strong>{{ number_format($lineTotal, 2) }}₺</strong>
             </div>
         </div>
