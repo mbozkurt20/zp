@@ -41,6 +41,7 @@ class StockResource extends Resource
                     ->label('Alış Fiyatı')
                     ->required(),
                 Forms\Components\Select::make('stock_type')->label('Stok Türü')->options([
+                    'Kilogram' => 'Kilogram',
                     'Gram' => 'Gram',
                     'Litre' => 'Litre',
                     'Adet' => 'Adet',

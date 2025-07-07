@@ -9,36 +9,97 @@ use App\Models\Product;
 use App\Models\ProductVariant;
 use Filament\Pages\Page;
 use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
+use Livewire\WithPagination;
 
 class Reports extends Page
 {
+    use WithPagination;
+
     protected static ?string $navigationIcon = 'heroicon-o-chart-bar';
     protected static string $view = 'filament.pages.reports';
     protected static ?string $title = 'Raporlar';
 
     public $data = [];
+    public $search = '';
+    public $dateFrom;
+    public $dateTo;
+
     public function mount(): void
     {
-        $this->data['totalOrders'] = Order::count();
-        $this->data['totalRevenue'] = Order::sum('total');
+        $this->dateFrom = Carbon::now()->format('Y-m-d');
+        $this->dateTo = Carbon::now()->format('Y-m-d');
+        $this->generateReport();
+    }
 
-// Ürünler ve varyantlar
-        $products = Product::with('variants')->get();
+    public function updated($property)
+    {
+        if (in_array($property, ['search', 'dateFrom', 'dateTo'])) {
+            $this->generateReport();
+        }
+    }
 
-// Rapor verisi: ürün eklenme ve satış sayısı
-        $reportItems = $products->map(function ($product) {
-            $addedCount = BasketItem::where('product_id', $product->id)->count();
-            $soldCount = DB::table('basket_items')
-                ->where('product_id', $product->id)
+    public function generateReport()
+    {
+        $start = Carbon::parse($this->dateFrom)->startOfDay();
+        $end = Carbon::parse($this->dateTo)->endOfDay();
+
+        $completedOrders = Order::whereBetween('created_at', [$start, $end])->get();
+        $this->data['totalOrders'] = $completedOrders->count();
+        $this->data['totalRevenue'] = $completedOrders->sum('total');
+
+        // Ödeme Tipi Bazlı Rapor
+        $paymentTypes = ['Kredi Kart', 'Nakit', 'Eft/Havale'];
+        $paymentTypeReport = [];
+
+        foreach ($paymentTypes as $type) {
+            $baskets = Basket::where('payment_type', $type)
+                ->where('is_completed', true)
+                ->whereBetween('created_at', [$start, $end])
+                ->with(['basketItems.productVariant'])
+                ->get();
+
+            $totalRevenue = 0;
+
+            foreach ($baskets as $basket) {
+                foreach ($basket->basketItems as $item) {
+                    $variant = $item->productVariant;
+                    if ($variant) {
+                        $totalRevenue += $variant->price * $item->quantity;
+                    }
+                }
+            }
+
+            $paymentTypeReport[] = [
+                'payment_type' => $type,
+                'basket_count' => $baskets->count(),
+                'total_revenue' => $totalRevenue,
+            ];
+        }
+
+        $this->data['paymentTypeReport'] = $paymentTypeReport;
+
+        // Ürün Bazlı Rapor
+        $products = Product::with('variants')
+            ->when($this->search, fn($q) => $q->where('name', 'like', '%' . $this->search . '%'))
+            ->get();
+
+        $reportItems = $products->map(function ($product) use ($start, $end) {
+            $addedCount = BasketItem::where('product_id', $product->id)
+                ->whereBetween('created_at', [$start, $end])
+                ->count();
+
+            $soldCount = BasketItem::where('product_id', $product->id)
+                ->whereBetween('created_at', [$start, $end])
                 ->sum('quantity');
 
             $soldTotal = BasketItem::where('product_id', $product->id)
-                ->with('productVariant') // ilişkili variant'ları da al
+                ->whereBetween('created_at', [$start, $end])
+                ->with('productVariant')
                 ->get()
-                ->sum(function ($basketItem) {
-                    // Varsayım: her basket item sadece bir variant ile ilişkili
-                    $variant = $basketItem->productVariant->first(); // Eğer ilişkisi birden fazlaysa burayı değiştirmen gerekebilir
-                    return $variant ? $variant->price * $basketItem->quantity : 0;
+                ->sum(function ($item) {
+                    $variant = $item->productVariant?->first();
+                    return $variant ? $variant->price * $item->quantity : 0;
                 });
 
             return [
@@ -51,14 +112,11 @@ class Reports extends Page
 
         $this->data['reportItems'] = $reportItems;
 
-// ============================
-// 💰 KAR ZARAR HESAPLAMALARI
-// ============================
-
-// 1. Gerçekleşen satışlardan kar/zarar
+        // Kar Hesaplaması
         $completedBaskets = Basket::where('is_shopping', false)
             ->where('is_completed', true)
-            ->with(['basketItems']) // performans için eager load
+            ->whereBetween('created_at', [$start, $end])
+            ->with(['basketItems'])
             ->get();
 
         $totalRealizedProfit = 0;
@@ -68,41 +126,13 @@ class Reports extends Page
                 $variant = $item->productVariant;
                 $product = $variant?->product;
 
-                if (!$variant || !$product) {
-                    continue;
-                }
+                if (!$variant || !$product) continue;
 
-                $purchasePrice = $product->purchase_price; // alış fiyatı
-                $salePrice = $variant->price;              // satış fiyatı
-                $quantity = $item->quantity;
-
-                $profit = ($salePrice - $purchasePrice) * $quantity;
+                $profit = ($variant->price - $product->purchase_price) * $item->quantity;
                 $totalRealizedProfit += $profit;
             }
         }
 
-// 2. Tüm stoklar satılsaydı oluşacak kar
-        $variants = ProductVariant::with('product')->get();
-
-        $totalPotentialProfit = 0;
-
-        foreach ($variants as $variant) {
-            $product = $variant->product;
-
-            if (!$product) {
-                continue;
-            }
-
-            $stock = $product->quantity;
-            $purchasePrice = $product->purchase_price;
-            $salePrice = $variant->price;
-
-            $potentialProfit = ($salePrice - $purchasePrice) * $stock;
-            $totalPotentialProfit += $potentialProfit;
-        }
-
         $this->data['realizedProfit'] = $totalRealizedProfit;
-        $this->data['potentialProfit'] = $totalPotentialProfit;
-
     }
 }

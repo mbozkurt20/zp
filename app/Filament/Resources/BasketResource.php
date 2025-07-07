@@ -57,7 +57,6 @@ class BasketResource extends Resource
                         'Kredi Kart' => 'Kredi Kart',
                         'Eft/Havale' => 'Eft/Havale',
                     ])
-
             ]);
     }
     public static function table(Table $table): Table
