@@ -36,12 +36,16 @@
             <h2 class="text-xl font-bold mb-4">Genel Sipariş Özeti</h2>
             <div class="grid grid-cols-2 gap-6">
                 <div class="p-4 bg-gray-50 rounded shadow-sm avoid-break">
-                    <div class="text-sm text-gray-700 mb-2">Toplam Sipariş Sayısı</div>
+                    <div class="text-sm font-bold text-gray-700 mb-2">Toplam Sipariş Sayısı</div>
                     <div class="text-2xl font-semibold text-gray-700">{{ $data['totalOrders'] }}</div>
                 </div>
                 <div class="p-4 bg-gray-50 rounded shadow-sm avoid-break">
-                    <div class="text-sm text-gray-700 mb-2">Toplam Ciro</div>
-                    <div class="text-2xl font-semibold text-gray-700">₺{{ number_format($data['totalRevenue'], 2) }}</div>
+                    <div class="text-sm font-bold text-gray-700 mb-2">Toplam Ciro</div>
+                    <div class="text-2xl font-semibold text-gray-700">₺{{ number_format($data['totalRevenue'], 2,',','.') }}</div>
+                </div>
+                <div class="p-4 bg-gray-50 rounded shadow-sm avoid-break">
+                    <div class="text-sm font-bold text-gray-700 mb-2">Toplam Kar</div>
+                    <div class="text-2xl font-semibold text-gray-700">₺{{ number_format($data['realizedProfit'], 2,',','.') }}</div>
                 </div>
             </div>
         </div>
@@ -58,21 +62,23 @@
                 <div class="border border-gray-200 rounded-lg p-3 mb-4 shadow-sm bg-white avoid-break">
                     <div class="text-xl font-semibold text-gray-700">{{ $product->name }}</div>
                     <div class="grid grid-cols-2 md:grid-cols-3 gap-4 mt-3 text-sm text-gray-600">
-                        <div>
-                            <span class="font-medium">{{ $product->stock_type }} Fiyatı:</span>
-                            ₺{{ number_format($product->price, 2) }}
-                        </div>
+                        @foreach($product->variants as $i => $variant)
+                            <div class="grid grid-cols-2 rounded px-3 p-2" style="background: #0522e1;color: white;padding: 3px 3px 3px 3px ">
+                                <p><strong>Variant-{{$i+1}} | </strong> <span class="font-medium">{{ $variant->type }} Fiyatı:</span>
+                                  <strong>  ₺{{ number_format($variant->price, 2,',','.') }}</strong></p>
+                            </div>
+                        @endforeach
                         <div>
                             <span class="font-medium">Sepete Eklenme:</span>
-                            {{ $item['added_count'] }} kez
+                          <strong>  {{ $item['added_count'] }} kez</strong>
                         </div>
                         <div>
                             <span class="font-medium">Satış Adedi:</span>
-                            {{ $item['sold_count'] }} adet
+                           <strong> {{ $item['sold_count'] }} adet</strong>
                         </div>
                         <div>
                             <span class="font-medium">Toplam Satış Tutarı:</span>
-                            ₺{{ number_format($item['sold_count'] * $product->price, 2) }}
+                           <strong> ₺{{ number_format($item['soldTotal'] , 2,',','.') }}</strong>
                         </div>
                     </div>
                 </div>

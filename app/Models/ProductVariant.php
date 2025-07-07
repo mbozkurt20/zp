@@ -16,4 +16,8 @@ class ProductVariant extends Model
      'price',
      'sort',
    ];
+
+   public function product(){
+       return $this->belongsTo(Product::class);
+   }
 }
