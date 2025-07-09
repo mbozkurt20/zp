@@ -105,7 +105,7 @@
             message = $event.detail.message;
             type = $event.detail.type;
             show = true;
-            setTimeout(() => show = false, 100);
+            setTimeout(() => show = false, 10);
         "
         x-show="show"
         x-transition
