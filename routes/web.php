@@ -124,7 +124,6 @@ Route::middleware('auth')->group(function () {
             ]);
         }
 
-        $basket = Basket::find(4);
         $groupedItems = $basket->basketItems->groupBy('product_id');
 
         $total = 0;
