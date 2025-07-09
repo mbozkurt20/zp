@@ -106,7 +106,6 @@ Route::middleware('auth')->group(function () {
         $cart = $request->cart;
         $payment = $request->payment;
 
-/*
         $basket = \App\Models\Basket::create([
             'user_id' => auth()->id(),
             'is_shopping' => 0,
@@ -124,8 +123,6 @@ Route::middleware('auth')->group(function () {
                 'quantity' => $item['quantity'],
             ]);
         }
-
-*/
 
         $basket = Basket::find(4);
         $groupedItems = $basket->basketItems->groupBy('product_id');

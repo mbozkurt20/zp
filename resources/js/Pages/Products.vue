@@ -128,7 +128,7 @@ onMounted(() => {
                 >
 
                     <img
-                        :src="`/storage/${product.image}`"
+                        :src="`/storage/${product.image  ?? '/images/images.jpeg'}`"
                         alt=""
                         class="w-36 h-36 object-cover rounded-xl mb-4 shadow-inner"
                     />

@@ -103,7 +103,7 @@ const filteredProducts = (category) => {
                                 class="bg-white border border-gray-200 rounded-2xl shadow-md hover:shadow-xl transition-shadow duration-300 p-6 flex flex-col items-center text-center"
                             >
                                 <img
-                                    :src="`/storage/${product.image}`"
+                                    :src="`/storage/${product.image ?? '/images/images.jpeg'}`"
                                     alt=""
                                     class="w-36 h-36 object-cover rounded-xl mb-4 shadow-inner"
                                 />
