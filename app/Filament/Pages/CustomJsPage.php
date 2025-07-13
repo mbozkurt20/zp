@@ -13,12 +13,12 @@ class CustomJsPage extends Page
     use WithPagination;
 
     protected static ?string $navigationIcon = 'heroicon-o-tv';
-
     protected static string $view = 'filament.pages.custom-js-page';
-   protected static ?string $title = 'Sipariş Ekranı';
+    protected static ?string $title = 'Sipariş Ekranı';
+
     public static function shouldRegisterNavigation(): bool
     {
-        return true; // Menüde gözüksün
+        return true;
     }
 
     public static function getNavigationLabel(): string
@@ -28,19 +28,6 @@ class CustomJsPage extends Page
 
     public function getCategoriesProperty(): Collection
     {
-        return Category::with('products')->get();
-    }
-
-    public function filteredProducts($categoryId)
-    {
-        $query = strtolower($this->searchQueries[$categoryId] ?? '');
-
-        return Product::where('category_id', $categoryId)
-            ->when($query, function ($q) use ($query) {
-                $q->where(function ($sub) use ($query) {
-                    $sub->where('name', 'like', "%$query%")
-                        ->orWhere('description', 'like', "%$query%");
-                });
-            })->get();
+        return Category::with(['products:id,name,barcode,category_id'])->get();
     }
 }

@@ -107,28 +107,55 @@ const filteredProducts = (category) => {
         <div class="relative flex min-h-screen flex-col w-full  mx-auto max-w-7xl">
             <div class="relative w-full">
                 <main class="mt-6 py-12">
-                    <div v-if="categories.length" class="px-6 sm:px-6 lg:px-8 grid grid-cols-1 sm:grid-cols-2 gap-10">
-                        <div v-for="category in categories" :key="category.id"
-                             class="p-6 bg-white/90 border border-gray-200 rounded-lg shadow h-52">
-                            <a class="bg-white" href="#">
-                                <h5 class="mb-2 text-2xl bg-white/80 font-bold tracking-tight py-1 rounded-lg text-center text-blue-950 ">
-                                   {{category.name}}
-                                </h5>
-                            </a>
-                            <p class="mb-3 font-normal text-gray-700">
-                              {{category.description}}
-                            </p>
-                            <div class="py-4 pt-14">
-                                <Link
-                                    :href="route('products', { id: category.id })"
-                                    class="inline-flex items-center px-3 py-2 text-sm font-medium text-center text-blue-950 bg-white/80 rounded-lg hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-blue-300 ">
-                                    Ürünlere Git
-                                    <svg class="rtl:rotate-180 w-3.5 h-3.5 ms-2" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 10">
-                                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M1 5h12m0 0L9 1m4 4L9 9"/>
-                                    </svg>
-                                </Link>
+                    <div v-if="categories.length" class="px-6 sm:px-6 lg:px-8  gap-10">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 p-4 backdrop-blur-md">
+                            <div
+                                v-for="category in categories"
+                                :key="category.id"
+                                class="bg-white/10 border border-white/30 rounded-2xl shadow-xl backdrop-blur-lg p-4 relative overflow-hidden transition-all duration-300 hover:scale-105"
+                            >
+                                <!-- Soft glow effect -->
+                                <div class="absolute inset-0 bg-gradient-to-br from-white/10 to-blue-100/10 pointer-events-none"></div>
+
+                                <!-- Image -->
+                                <div class="h-72 w-full rounded-xl overflow-hidden border border-white/20">
+                                    <img
+                                        class="w-full h-full object-cover object-center"
+                                        :src="category.image ? `/storage/${category.image}` : '/images/images.jpeg'"
+                                        alt="Kategori Görseli"
+                                    />
+                                </div>
+
+                                <!-- Content -->
+                                <div class="relative z-10 mt-4 flex flex-col justify-between h-[160px]">
+                                    <h3 class="text-xl font-semibold text-white text-center drop-shadow-sm">
+                                        {{ category.name }}
+                                    </h3>
+                                    <p class="text-sm text-white/80 text-center mt-2 line-clamp-3">
+                                        {{ category.description }}
+                                    </p>
+
+                                    <div class="mt-4 text-center">
+                                        <Link
+                                            :href="route('products', { id: category.id })"
+                                            class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-white/10 border border-white/30 rounded-full hover:bg-white/20 backdrop-blur-sm transition"
+                                        >
+                                            Ürünlere Git
+                                            <svg class="w-4 h-4 rtl:rotate-180" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 10">
+                                                <path
+                                                    stroke="currentColor"
+                                                    stroke-linecap="round"
+                                                    stroke-linejoin="round"
+                                                    stroke-width="2"
+                                                    d="M1 5h12m0 0L9 1m4 4L9 9"
+                                                />
+                                            </svg>
+                                        </Link>
+                                    </div>
+                                </div>
                             </div>
                         </div>
+
                     </div>
                     <div v-else>
                         <h4>Kategori Bulunmuyor...</h4>

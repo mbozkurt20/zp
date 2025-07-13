@@ -25,6 +25,8 @@
 
         h2 {
             margin-bottom: 20px;
+            font-size: 28px; /* Başlığı büyüttüm */
+            font-weight: bold;
         }
 
         .product-list {
@@ -32,12 +34,26 @@
             max-width: 500px;
             margin: 0 auto;
             text-align: left;
+            font-size: 16px; /* Ürün metinleri için genel font büyüklüğü */
         }
 
         .product-item {
             border-bottom: 1px solid #eee;
-            padding-bottom: 4px;
-            margin-bottom: 10px;
+            padding-bottom: 6px;
+            margin-bottom: 12px;
+        }
+
+        .product-item div:first-child {
+            font-size: 17px;
+            font-weight: 500;
+        }
+
+        .product-item small {
+            font-size: 14px;
+        }
+
+        .product-item strong {
+            font-size: 16px;
         }
 
         .footer {

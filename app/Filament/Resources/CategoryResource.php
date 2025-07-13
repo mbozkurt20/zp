@@ -6,6 +6,7 @@ use App\Filament\Resources\CategoryResource\Pages;
 use App\Filament\Resources\CategoryResource\RelationManagers;
 use App\Models\Category;
 use Filament\Forms;
+use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -36,6 +37,11 @@ class CategoryResource extends Resource
     {
         return $form
             ->schema([
+                FileUpload::make('image')
+                    ->label('Kategori Görseli')
+                    ->directory('products')
+                    ->required()
+                    ->acceptedFileTypes(['image/jpeg','image/jpg', 'image/webp','image/avif','image/png',]),
                TextInput::make('name')->required()->label('Kategori İsmi'),
                 TextInput::make('description')->nullable()->label('Kategori Açıklama'),
             ]);
