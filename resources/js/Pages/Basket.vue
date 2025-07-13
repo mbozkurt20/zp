@@ -59,38 +59,38 @@ onMounted(fetchProducts)
             <div class="mx-auto max-w-7xl sm:px-6 lg:px-8">
                 <div class="container mx-auto mt-10">
                     <div class="sm:flex shadow-md my-10">
-                        <div class="  w-full  sm:w-3/4 bg-white px-10 py-10">
+                        <div class="  w-full  sm:w-3/4 bg-white/10 border border-white/30 rounded-2xl shadow-xl backdrop-blur-lg  px-10 py-10">
                             <div class="flex justify-between border-b pb-8">
-                                <h1 class="font-semibold text-3xl">Alışveriş Sepeti</h1>
+                                <h1 class="font-semibold text-3xl text-white">Alışveriş Sepeti</h1>
                             </div>
 
                             <div v-for="item in cartStore.cart" class="border-b border-orange-200 md:flex items-strech py-8 md:py-10 lg:py-8 border-t">
 
                                 <div class="md:w-4/12 2xl:w-1/4 w-full">
-                                    <img :src="`/storage/${item.image}`" alt="Black Leather Purse" class=" h-full object-center object-cover md:block hidden" />
-                                    <img :src="`/storage/${item.image}`" alt="Black Leather Purse" class="md:hidden w-full h-full object-center object-cover" />
+                                    <img  :src="`${item.image ? '/storage/'+item.image : '/images/images.jpeg'}`" alt="Black Leather Purse" class=" h-full object-center object-cover md:block hidden" />
+                                    <img  :src="`${item.image ? '/storage/'+item.image : '/images/images.jpeg'}`" alt="Black Leather Purse" class="md:hidden w-full h-full object-center object-cover" />
                                 </div>
                                 <div class="md:pl-3 md:w-8/12 2xl:w-3/4 flex flex-col justify-center">
                                     <!--p class="text-xs leading-3 text-gray-800 md:pt-0 pt-4">RF293</p-->
                                     <div class="mx-auto text-center w-full">
-                                        <p class="text-base font-black leading-none text-blue-950 py-4">{{item.name}} {{item.id }} {{item.variantId}}</p>
+                                        <p class="text-base font-black leading-none text-white py-4">{{item.name}} {{item.id }} {{item.variantId}}</p>
 
                                         <div class="text-xl font-extrabold text-orange-500 mb-4">
                                             <div v-for="variant in item.variants">
                                                 <div v-if="variant.id === item.variantId">
-                                                   <span class="text-sm"> {{ variant.quantity }} {{ variant.type }}</span> | {{ variant.price }}₺
+                                                   <span class="text-sm text-white"> {{ variant.quantity }} {{ variant.type }}</span> | {{ variant.price }}₺
                                                 </div>
                                             </div>
                                         </div>
 
-                                        <p class="text-sm font-black leading-none text-gray-500 pb-4">{{item.description}}</p>
+                                        <p class="text-sm font-black leading-none text-gray-100 pb-4">{{item.description}}</p>
 
                                         <div class="flex mx-auto justify-center gap-4 mt-4">
                                             <button
                                                 @click="cartStore.decreaseFromCart(item)"
                                                 class="px-3 py-1 bg-orange-500 text-white hover:bg-orange-400 rounded-full shadow"
                                             >-</button>
-                                            <span class="font-semibold text-lg">
+                                            <span class="font-semibold text-lg text-white">
                                                 {{ item.quantity || 0 }}
                                             </span>
                                             <button
@@ -102,26 +102,26 @@ onMounted(fetchProducts)
                                 </div>
                             </div>
 
-                            <div class="bg-gray-50 py-5 w-auto" v-if="!cartStore.totalProduct">
-                                <p class="text-center mx-auto text-gray-500">Sepette Ürün Bulunmuyor...</p>
+                            <div class="bg-white/10 border border-white/30 rounded-2xl shadow-xl backdrop-blur-lg  py-5 w-auto" v-if="!cartStore.totalProduct">
+                                <p class="text-center mx-auto text-gray-100">Sepette Ürün Bulunmuyor...</p>
                             </div>
 
-                            <Link class=" flex font-semibold text-indigo-600 text-sm mt-10" :href="route('dashboard')">
-                                <svg class="fill-current mr-2 text-indigo-600 w-4" viewBox="0 0 448 512">
+                            <Link class=" flex font-semibold text-indigo-100 text-sm mt-10" :href="route('dashboard')">
+                                <svg class="fill-current mr-2 text-indigo-100 w-4" viewBox="0 0 448 512">
                                     <path
                                         d="M134.059 296H436c6.627 0 12-5.373 12-12v-56c0-6.627-5.373-12-12-12H134.059v-46.059c0-21.382-25.851-32.09-40.971-16.971L7.029 239.029c-9.373 9.373-9.373 24.569 0 33.941l86.059 86.059c15.119 15.119 40.971 4.411 40.971-16.971V296z" />
                                 </svg>
                                 Alışverişe Devam Et
                             </Link>
                         </div>
-                        <div id="summary" class=" w-full   sm:w-1/4   md:w-1/2     px-8 py-10 bg-white/90">
-                            <h1 class="font-semibold text-3xl border-b pb-8">Sepet Özeti</h1>
+                        <div id="summary" class=" w-full   sm:w-1/4   md:w-1/2     px-8 py-10 bg-white/10 border border-white/30 rounded-2xl shadow-xl backdrop-blur-lg">
+                            <h1 class="font-semibold text-3xl border-b-2 pb-8 text-white">Sepet Özeti</h1>
                             <div class=" justify-between mt-10 mb-5">
-                                <div class="" v-for="item in cartStore.cart">
-                                    <div class="grid border-b border-gray-300">
-                                        <span class="">{{item.name}} <strong>x {{item.quantity}}</strong></span>
+                                <div class="border-b border-gray-100 py-3" v-for="item in cartStore.cart">
+                                    <div class=" border-gray-100">
+                                        <span class="text-white">{{item.name}} <strong>x {{item.quantity}}</strong></span>
 
-                                        <div class="ml-auto flex justify-end font-semibold" v-for="variant in item.variants" :key="variant.id">
+                                        <div class="ml-auto flex justify-end font-semibold text-white " v-for="variant in item.variants" :key="variant.id">
                                             <div v-if="variant.id === item.variantId">
                                                 {{ variant.price }}₺
                                             </div>
@@ -138,8 +138,8 @@ onMounted(fetchProducts)
                                 </select>
                             </div-->
 
-                            <div class="border-t mt-8">
-                                <div class="flex font-semibold justify-between py-6 text-sm uppercase">
+                            <div class="mt-8">
+                                <div class="flex font-semibold justify-between py-6 text-sm uppercase text-white">
                                     <span>Toplam Tutar</span>
                                     <span class="text-lg">{{cartStore.totalAmount}}₺</span>
                                 </div>

@@ -124,7 +124,7 @@ onMounted(() => {
                     v-for="product in products"
                     :key="product.id"
                     v-if="products.length"
-                    class="bg-white border border-gray-200 rounded-2xl shadow-md hover:shadow-xl transition-shadow duration-300 p-6 flex flex-col items-center text-center"
+                    class="bg-white/10 border border-white/30 rounded-2xl shadow-xl backdrop-blur-lg  hover:shadow-xl transition-shadow duration-300 p-6 flex flex-col items-center text-center"
                 >
 
                     <img
@@ -132,10 +132,9 @@ onMounted(() => {
                         alt=""
                         class="w-36 h-36 object-cover rounded-xl mb-4 shadow-inner"
                     />
-                    <h3 class="text-lg font-bold text-blue-950 mb-1">{{ product.name }}</h3>
+                    <h3 class="text-lg font-bold text-white mb-1">{{ product.name }}</h3>
 
-                    <div class="space-y-2  mb-4">
-                        {{product.variantId}}
+                    <div class="space-y-2 mt-4  mb-4">
                         <label
                             v-for="variant in product.variants"
                             :key="variant.id"
@@ -169,10 +168,10 @@ onMounted(() => {
                         Giriş Yap
                     </Link>
 
-                    <div v-if="isLogin&&product.quantity" class="flex items-center justify-center gap-4 mt-auto">
+                    <div v-if="isLogin&&product.quantity" class="flex items-center justify-center pt-6 gap-4 mt-auto">
                         <button
                             @click="cartStore.addToCart(product)"
-                            class="py-1 px-1 flex items-center justify-center bg-green-500 hover:bg-green-400 text-white text-lg font-bold rounded-lg shadow"
+                            class="py-0.5 px-3 flex items-center justify-center bg-green-500 hover:bg-green-400 text-white text-lg font-bold rounded-lg shadow"
                         >Sepete Ekle</button>
                     </div>
                 </div>

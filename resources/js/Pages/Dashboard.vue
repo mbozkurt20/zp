@@ -77,10 +77,10 @@ const filteredProducts = (category) => {
         <div class="py-12 ">
             <div class="mx-auto max-w-7xl px-6 sm:px-6 lg:px-8">
                 <div v-if="categories.length" v-for="category in categories" :key="category.id"
-                     class="mb-10 overflow-hidden bg-white/90 shadow-xl rounded-2xl">
+                     class="mb-10 overflow-hidden bg-white/10 border border-white/30 rounded-2xl shadow-xl backdrop-blur-lg">
                     <div class="grid grid-cols-1 sm:grid-cols-2 px-3 py-8">
-                        <h4 class="mb-5 sm:mb-0 text-2xl text-blue-950 pl-8 font-bold ">
-                            {{ category.name }} Reyonu
+                        <h4 class="mb-5 sm:mb-0 text-3xl text-white pl-8 font-bold ">
+                            {{ category.name }}
                         </h4>
 
                         <!-- Arama inputu -->
@@ -89,7 +89,7 @@ const filteredProducts = (category) => {
                                 v-model="searchQueries[category.id]"
                                 type="text"
                                 placeholder="Ürün ara..."
-                                class="w-full border border-gray-300 rounded-xl px-4 py-2 focus:outline-none focus:ring-2 focus:ring-purple-400"
+                                class="w-full border border-gray-300 bg-white/10  placeholder:text-white border-white/30 rounded-2xl shadow-xl backdrop-blur-lg text-white  px-4 py-2 focus:outline-none focus:ring-2 focus:ring-purple-400"
                             />
                         </div>
                     </div>
@@ -100,14 +100,15 @@ const filteredProducts = (category) => {
                                 v-for="product in filteredProducts(category)"
                                 :key="product.id"
                                 v-if="filteredProducts(category).length"
-                                class="bg-white border border-gray-200 rounded-2xl shadow-md hover:shadow-xl transition-shadow duration-300 p-6 flex flex-col items-center text-center"
+                                class="bg-white/10 border border-white/30 rounded-2xl shadow-xl backdrop-blur-lg hover:shadow-xl transition-shadow duration-300 p-6 flex flex-col items-center text-center"
                             >
                                 <img
                                     :src="`${product.image ? '/storage/'+product.image : '/images/images.jpeg'}`"
                                     alt=""
                                     class="w-36 h-36 object-cover rounded-xl mb-4 shadow-inner"
                                 />
-                                <h3 class="text-lg font-bold text-gray-800 mb-1">{{ product.name }} </h3>
+
+                                <h3 class="text-lg font-bold text-white mb-4">{{ product.name }} </h3>
 
 
                                 <div class="  mb-4">
@@ -147,7 +148,7 @@ const filteredProducts = (category) => {
                                     >Sepete Ekle</button>
                                 </div>
                             </div>
-                            <div class="bg-gray-100 px-4 rounded-lg py-4" v-else>
+                            <div class="bg-white/10 border border-white/30 rounded-md shadow-xl backdrop-blur-lg px-4 text-white py-3" v-else>
                                 <h4>Ürün Bulunmuyor...</h4>
                             </div>
                         </div>
