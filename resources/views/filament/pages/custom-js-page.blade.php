@@ -7,8 +7,7 @@
 
         @media (min-width: 768px) {
             .category-scroll {
-                padding-bottom: 1rem;
-                height: 4.5rem;
+                height: 7.5rem;
             }
 
             .category-scroll > div {
@@ -16,7 +15,7 @@
             }
 
             .product-grid-container {
-                max-height: 600px;
+                max-height: 800px;
                 overflow-y: auto;
             }
         }
@@ -32,7 +31,7 @@
                         :class="selectedCategory === category.id
                             ? 'bg-primary-600 text-white'
                             : 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white'"
-                        class="rounded px-4 py-4 hover:bg-primary-100 border border-gray-100">
+                        class="rounded px-4 py-8 hover:bg-primary-100 border border-gray-300 hover:bg-gray-100">
                         <span x-text="category.name"></span>
                     </button>
                 </template>
@@ -52,18 +51,24 @@
                 <!-- Ürün Grid -->
                 <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 product-grid-container">
                     <template x-for="product in selectedProducts" :key="product.id">
-                        <div @click="$dispatch('scan', { barcode: product.barcode })"
-                             class="border rounded shadow-sm p-3 bg-white dark:bg-gray-800 hover:bg-gray-100 cursor-pointer">
-                            <img :src="'/storage/' + product.image" class="w-full h-32 object-cover rounded mb-2" />
-                            <div class="text-center font-semibold text-sm" x-text="product.name"></div>
+                        <div
+                            @click="$dispatch('scan', { barcode: product.barcode })"
+                            class="flex items-center justify-center text-center border rounded shadow-sm p-3 bg-white dark:bg-gray-800 hover:bg-gray-100 cursor-pointer"
+                            style="min-height: 15vh"
+                        >
+                            <div class="font-semibold text-lg" x-text="product.name"></div>
                         </div>
                     </template>
                 </div>
+            </div>
 
+            <!-- Sağ: Sepet ve Varyantlar -->
+            <div class="w-full lg:w-1/3 border-l bg-white dark:bg-gray-800 p-6 overflow-y-auto">
                 <!-- Barkod Girişi -->
-                <div class="flex flex-wrap space-x-4 items-end gap-4 mt-6">
+                <div class="flex flex-wrap space-x-4 items-end gap-4 mt-6 border border-gray-200">
                     <div class="flex-1">
                         <x-filament::input
+                            x-ref="barcodeInput"
                             placeholder="Barkod Giriniz"
                             label="Barkod"
                             class="bg-white text-black placeholder:text-gray-500 border border-gray-300 dark:bg-gray-800 dark:text-white dark:border-gray-600"
@@ -73,36 +78,38 @@
                         />
                     </div>
                 </div>
-
-                <!-- Ödeme Türü -->
                 <x-filament::section>
-                    <x-slot name="heading">Ödeme Türü</x-slot>
-                    <div class="flex space-x-2 gap-4">
-                        <template x-for="option in ['Nakit', 'Kredi Kart', 'EFT/Havale']" :key="option">
-                            <button type="button"
-                                    @click="payment = option"
-                                    :class="payment === option
-                                    ? 'bg-primary-600 text-white border-primary-600'
-                                    : 'bg-white text-gray-700 border-gray-300'"
-                                    class="border rounded-lg px-4 py-2 font-semibold hover:bg-primary-50">
-                                <span x-text="option"></span>
-                            </button>
-                        </template>
+
+                <!-- Varyant Paneli (Sağda Sepet Altında) -->
+                <template x-if="variants.length > 0">
+                    <div class="mt-6">
+                        <div class="flex justify-between items-center mb-4">
+                            <h2 class="text-xl font-bold" x-text="product.name"></h2>
+                            <button @click="variants = []" class="text-red-500 font-bold text-lg">×</button>
+                        </div>
+
+                        <div class="font-bold py-1">Varyant Seçiniz</div>
+                        <div class="grid grid-cols-1 gap-3">
+                            <template x-for="variant in variants" :key="variant.id">
+                                <button
+                                    @click="selectVariant(variant)"
+                                    class="cursor-pointer border border-gray-300 hover:bg-gray-100 rounded p-3 py-5 hover:bg-primary-50 flex justify-between">
+                                    <div class="flex gap-2">
+                                        <div class="text-sm font-bold mt-0.5" x-text="variant.quantity"></div>
+                                        <div class="font-semibold" x-text="variant.type"></div>
+
+                                    </div>
+                                    <div class="text-green-600 font-bold" x-text="`₺${variant.price}`"></div>
+                                </button>
+                            </template>
+                        </div>
                     </div>
+                </template>
                 </x-filament::section>
-
-                <div class="flex">
-                    <x-filament::button class="py-4 w-full flex ml-auto justify-end" color="success" @click="submitCart">
-                        Satışı Tamamla
-                    </x-filament::button>
-                </div>
-            </div>
-
-            <!-- Sağ: Sepet ve Varyantlar -->
-            <div class="w-full lg:w-1/3 border-l bg-white dark:bg-gray-800 p-6 overflow-y-auto">
-
                 <!-- Sepet -->
                 <x-filament::section>
+
+
                     <x-slot name="heading">Sepet</x-slot>
 
                     <template x-if="cart.length === 0">
@@ -120,43 +127,40 @@
                                 </div>
                                 <div class="text-green-400 font-bold" x-text="`₺${item.price}`"></div>
                             </div>
-                            <input disabled style="background: #0000cc" type="number" min="1" x-model.number="item.quantity"
-                                   class="w-16 border rounded px-2 py-1 text-center text-black bg-white"
+                            <input disabled style="background: #ea570b" type="number" min="1" x-model.number="item.quantity"
+                                   class="w-16 border rounded px-2 py-1 text-center text-white dark:text-gray-900 bg-white"
                                    @change="updateQuantity(index, item.quantity)" />
                             <button class="text-red-500 ml-2" @click="removeItem(index)">Sil</button>
                         </div>
                     </template>
 
-                    <div class="text-right mt-5 text-lg font-bold py-4">
-                        Toplam: ₺<span x-text="totalPrice().toFixed(2)"></span>
+
+                </x-filament::section>
+                <!-- Ödeme Türü -->
+                <x-filament::section>
+                    <x-slot name="heading">Ödeme Türü</x-slot>
+                    <div class="flex space-x-2 gap-4">
+                        <template x-for="option in ['Nakit', 'Kredi Kart', 'EFT/Havale']" :key="option">
+                            <button type="button"
+                                    @click="payment = option"
+                                    :class="payment === option
+                                    ? 'bg-primary-600 text-white border-primary-600'
+                                    : 'bg-white text-gray-700 border-gray-300'"
+                                    class="border rounded-lg px-4 py-2 font-semibold hover:bg-primary-50">
+                                <span x-text="option"></span>
+                            </button>
+                        </template>
                     </div>
                 </x-filament::section>
+                <div class="text-right mt-5 text-lg font-bold py-4">
+                    Toplam: ₺<span x-text="totalPrice().toFixed(2)"></span>
+                </div>
+                <div class="flex">
+                    <x-filament::button class="py-4 w-full flex ml-auto justify-end" color="success" @click="submitCart">
+                        Satışı Tamamla
+                    </x-filament::button>
+                </div>
 
-                <!-- Varyant Paneli (Sağda Sepet Altında) -->
-                <template x-if="variants.length > 0">
-                    <div class="mt-6">
-                        <div class="flex justify-between items-center mb-4">
-                            <h2 class="text-xl font-bold" x-text="product.name"></h2>
-                            <button @click="variants = []" class="text-red-500 font-bold text-lg">×</button>
-                        </div>
-
-                        <div class="font-bold py-1">Varyant Seçiniz</div>
-                        <div class="grid grid-cols-1 gap-3">
-                            <template x-for="variant in variants" :key="variant.id">
-                                <button
-                                    @click="selectVariant(variant)"
-                                    class="cursor-pointer border rounded p-3 hover:bg-primary-50 flex justify-between">
-                                    <div class="flex gap-2">
-                                        <div class="text-sm font-bold text-gray-100" x-text="variant.quantity"></div>
-                                        <div class="font-semibold" x-text="variant.type"></div>
-
-                                    </div>
-                                    <div class="text-green-600 font-bold" x-text="`₺${variant.price}`"></div>
-                                </button>
-                            </template>
-                        </div>
-                    </div>
-                </template>
 
             </div>
         </div>
@@ -212,9 +216,17 @@
                     },
 
                     scanBarcode(passedBarcode = null) {
-                        let scanned = passedBarcode || (this.code || '').trim();
-                        if (!scanned) return;
+                        let scanned = passedBarcode;
+
+                        if (!scanned) {
+                            scanned = (this.code || '').trim();
+                        }
+
+                        if (!scanned) return; // hala boşsa çık
+
                         this.code = '';
+
+                        console.log("Barkod taranıyor:", scanned);
 
                         fetch(`/scan-product?barcode=${encodeURIComponent(scanned)}`)
                             .then(res => res.json())
@@ -259,6 +271,8 @@
                         });
                         this.variants = [];
                         this.product = {};
+
+                        this.$refs.barcodeInput.focus();
                     },
 
                     addToCart(item) {
@@ -305,24 +319,23 @@
                         })
                             .then(res => res.json())
                             .then(data => {
-                                if (data.success) {
-                                    window.dispatchEvent(new CustomEvent('notify', {
-                                        detail: { type: 'success', message: 'Satış başarılı!' }
-                                    }));
-                                    this.cart = [];
-                                } else {
-                                    window.dispatchEvent(new CustomEvent('notify', {
-                                        detail: { type: 'error', message: data.message || 'Bir hata oluştu!' }
-                                    }));
-                                }
-                            })
-                            .catch(() => {
-                                window.dispatchEvent(new CustomEvent('notify', {
-                                    detail: { type: 'error', message: 'Sunucu hatası!' }
-                                }));
+                                window.dispatchEvent(new CustomEvent('notify', { detail: { type: 'success', message: data.message } }));
+                                this.cart = [];
+                                this.payment = 'Nakit';
+                                window.open('/receipt/print/' + data.order.id, '_blank');
                             });
                     },
 
+                    totalPrice() {
+                        return this.cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+                    },
+
+                    filteredCategoryProducts(category) {
+                        const query = this.sidebarSearch?.toLowerCase() || '';
+                        return category.products.filter(p =>
+                            p.name.toLowerCase().includes(query)
+                        );
+                    },
                 };
             }
         </script>
