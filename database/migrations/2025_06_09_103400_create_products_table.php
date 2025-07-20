@@ -14,15 +14,12 @@ return new class extends Migration
         Schema::create('products', function (Blueprint $table) {
             $table->id();
             $table->foreignId('category_id')->constrained('categories');
-            $table->string('barcode');
-            $table->string('name');
+            $table->string('name')->nullable();
             $table->string('slug')->unique();
+            $table->boolean('is_day')->default(false);
             $table->string('image')->nullable();
-            $table->json('images')->nullable();
+            $table->string('file');
             $table->text('description')->nullable();
-            $table->string('stock_type')->nullable(); //gram adet
-            $table->string('quantity')->nullable(); // miktar
-            $table->string('warning_quantity')->nullable(); // uyarı miktarı
             $table->timestamps();
             $table->softDeletes();
         });

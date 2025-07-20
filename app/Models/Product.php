@@ -44,14 +44,9 @@ class Product extends Model
       'category_id',
       'name',
       'slug',
+      'is_day',
+      'file',
       'image',
       'description',
-      'price',
-      'purchase_price',
-      'qr_code',
-      'barcode',
-      'stock_type',
-      'quantity',
-      'warning_quantity',
     ];
 }

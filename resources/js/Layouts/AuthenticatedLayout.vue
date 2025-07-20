@@ -203,7 +203,7 @@ const showingNavigationDropdown = ref(false);
 
             <!-- Page Heading -->
             <header
-                class="bg-white shadow"
+                class="shadow"
                 v-if="$slots.header"
             >
                 <div class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
@@ -212,7 +212,7 @@ const showingNavigationDropdown = ref(false);
             </header>
 
             <!-- Page Content -->
-            <main class="min-h-screen bg-blue-950">
+            <main class="min-h-screen " style="background: #eb4ed6">
                 <slot />
             </main>
         </div>

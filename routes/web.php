@@ -7,16 +7,15 @@ use App\Models\Product;
 use App\Models\ProductVariant;
 use Illuminate\Foundation\Application;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Picqer\Barcode\BarcodeGeneratorPNG;
 
 Route::get('/', function () {
     return Inertia::render('Welcome', [
-        'canLogin' => Route::has('login'),
-        'canRegister' => Route::has('register'),
-        'laravelVersion' => Application::VERSION,
-        'phpVersion' => PHP_VERSION,
+       'categories' => \App\Models\Category::all()
     ]);
 })->name('welcome');
 
@@ -32,6 +31,57 @@ Route::get('/category/{id}', function ($id) {
         'phpVersion' => PHP_VERSION,
     ]);
 })->name('products');
+
+Route::post('songs/set-day/{id}', function ($id) {
+    Product::query()->update(['is_day' => false]);
+
+    $product = Product::find($id);
+
+    $product->is_day = true;
+    $product->save();
+    return response()->json(['message' => 'Günün Şarkısı Değiştirildi']);
+});
+
+Route::post('songs/remove/{id}', function ($id) {
+    $product = Product::find($id);
+    $product->delete();
+
+    return response()->json(['message' => 'Günün Şarkısı Silindi']);
+});
+
+Route::get('cache',function () {
+    Artisan::call('cache:clear');
+    Artisan::call('config:clear');
+    Artisan::call('config:cache');
+    Artisan::call('view:clear');
+    Artisan::call('route:clear');
+});
+
+Route::post('/songs', function (Request $request) {
+    $request->validate([
+        'name' => 'nullable|string|max:255',
+        'description' => 'nullable|string',
+        'category_id' => 'nullable|integer|exists:categories,id',
+        'image' => 'nullable|image|max:2048',
+        'file' => 'required|file|mimes:mp3,wav,ogg|max:10000',
+    ]);
+
+
+    $imagePath = $request->file('image') ? $request->file('image')->store('images', 'public') : null;
+    $filePath = $request->file('file')->store('songs', 'public');
+
+    $song = Product::create([
+        'name' => $request->name,
+        'slug' => Str::slug(rand(11111111, 99999999), '-'),
+        'description' => $request->description?? $request->file('file')->getClientOriginalName(),
+        'image' => $imagePath,
+        'file' => $filePath,
+        'category_id' => $request->category_id ?? 1,
+    ]);
+
+    return response()->json(['message' => 'Şarkı Başarıyla Eklendi!', 'data' => $song]);
+});
+
 
 Route::get('/dashboard', function () {
     $products = Product::with('variants')->get();
