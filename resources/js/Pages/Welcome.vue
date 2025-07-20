@@ -5,6 +5,8 @@ import axios from "axios";
 import {toast} from "vue3-toastify";
 
 const props = defineProps(['categories']);
+const tab = ref('list');
+
 
 const form = ref({
     name: '',
@@ -185,9 +187,6 @@ const setAsRemove = async (id) => {
 
 
 const daySong = computed(() => products.value.find(p => p.is_day))
-
-
-
 </script>
 
 <template>
@@ -212,55 +211,62 @@ const daySong = computed(() => products.value.find(p => p.is_day))
             <div class="relative w-full">
                 <main class="px-3 sm:px-8">
                     <h1 class="py-4 text-3xl text-white font-bold text-center mx-auto">Z&M Malikanesi</h1>
-                    <section v-if="products.find(p => p.is_day)"
-                             class="my-10 grid grid-cols-1 lg:grid-cols-4 gap-6">
-                        <div
-                            class="lg:col-span-2 bg-gradient-to-b from-pink-600 to-pink-800 text-white p-6 rounded-xl shadow-lg">
-                            <h2 class="text-xl font-bold mb-4">🎵 Günün Şarkısı</h2>
-                            <div v-if="daySong" class="flex flex-col items-center">
-                                <img :src="`/storage/${daySong.image}`" alt="Günün Şarkısı"
-                                     class="w-32 h-32 object-cover rounded-full mb-4"
-                                     :class="{ 'spin-animation': currentSong === daySong.id }"/>
-                                <p class="font-semibold mb-2">{{ daySong.name }}</p>
-                                <p class="text-sm mb-4 text-center">{{ daySong.description }}</p>
 
-                                <audio :ref="el => setAudioRef(daySong.id, el)" :src="`/storage/${daySong.file}`" preload="none" />
+                    <div class="flex justify-center mx-auto text-center gap-6 py-8">
+                        <button class="border border-white text-xl px-5 rounded-full hover:bg-white hover:text-pink-900 font-bold text-white" @click="tab = 'list'">Listemiz</button>
+                        <button class="border border-white text-xl px-5 rounded-full hover:bg-white hover:text-pink-900 font-bold text-white" @click="tab = 'add'">Yeni Ekle</button>
+                    </div>
+
+                    <div v-if="tab === 'list'">
+                        <section v-if="products.find(p => p.is_day)"
+                                 class="my-10 grid grid-cols-1 lg:grid-cols-4 gap-6">
+                            <div
+                                class="lg:col-span-2 bg-gradient-to-b bg-white/80 text-pink-500 p-6 rounded-xl shadow-lg">
+                                <h2 class="text-xl font-bold mb-4">🎵 Günün Şarkısı</h2>
+                                <div v-if="daySong" class="flex flex-col items-center">
+                                    <img :src="`/storage/${daySong.image}`" alt="Günün Şarkısı"
+                                         class="w-32 h-32 object-cover rounded-full mb-4"
+                                         :class="{ 'spin-animation': currentSong === daySong.id }"/>
+                                    <p class="font-semibold mb-2">{{ daySong.name }}</p>
+                                    <p class="text-sm mb-4 text-center">{{ daySong.description }}</p>
+
+                                    <audio :ref="el => setAudioRef(daySong.id, el)" :src="`/storage/${daySong.file}`" preload="none" />
 
 
-                                <div class="flex gap-2 mt-3">
-                                    <button
-                                        @click="playSong(daySong.id)"
-                                        class="px-4 py-1 bg-pink-500 text-white rounded hover:bg-pink-600"
-                                        v-if="currentSong !== daySong.id"
-                                    >
-                                        Oynat
-                                    </button>
+                                    <div class="flex gap-2 mt-3">
+                                        <button
+                                            @click="playSong(daySong.id)"
+                                            class="px-4 py-1 bg-pink-500 text-white rounded hover:bg-pink-600"
+                                            v-if="currentSong !== daySong.id"
+                                        >
+                                            Oynat
+                                        </button>
 
-                                    <button
-                                        @click="pauseSong(daySong.id)"
-                                        class="px-4 py-1 bg-pink-500 text-white rounded"
-                                        v-else
-                                    >
-                                        Durdur
-                                    </button>
+                                        <button
+                                            @click="pauseSong(daySong.id)"
+                                            class="px-4 py-1 bg-pink-500 text-white rounded"
+                                            v-else
+                                        >
+                                            Durdur
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
+                        </section>
+                        <div class="py-8">
+                            <input
+                                v-model="searchQuery"
+                                type="text"
+                                placeholder="Şarkı açıklamasında ara..."
+                                class="w-full px-4 py-2 rounded border border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-white"
+                            />
                         </div>
-                    </section>
-                    <div class="mb-6">
-                        <input
-                            v-model="searchQuery"
-                            type="text"
-                            placeholder="Şarkı açıklamasında ara..."
-                            class="w-full px-4 py-2 rounded border border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-white"
-                        />
-                    </div>
-                    <div v-for="category in categories" :key="category.id" class="mb-2">
-                        <h2 v-if="filteredProductsByCategory(category).length" class="text-2xl font-bold text-white mb-4">{{category.name}}</h2>
-                        <div class="lg:col-span-3 grid sm:grid-cols-2 xl:grid-cols-3 gap-6">
-                            <div v-for="product in filteredProductsByCategory(category)"
-                                      :key="product.id"
-                                      class="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-md flex flex-col items-center"
+                        <div v-for="category in categories" :key="category.id" class="mb-2">
+                            <h2 v-if="filteredProductsByCategory(category).length" class="mx-auto text-center text-3xl font-bold text-white mb-4">{{category.name}}</h2>
+                            <div class="lg:col-span-3 grid sm:grid-cols-2 xl:grid-cols-3 gap-6">
+                                <div v-for="product in filteredProductsByCategory(category)"
+                                     :key="product.id"
+                                     class="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-md flex flex-col items-center"
                                 >
                                     <img :src="`/storage/${product.image}`" alt="Şarkı"
                                          class="w-28 h-28 object-cover rounded-full mb-3"
@@ -268,7 +274,7 @@ const daySong = computed(() => products.value.find(p => p.is_day))
                                     />
                                     <h4 class="text-md font-semibold text-center text-gray-800 dark:text-white">
                                         {{ product.name }}</h4>
-                                    <p class="text-sm text-gray-600 dark:text-gray-300 text-center mt-1">
+                                    <p class="text-sm text-gray-600 dark:text-gray-300 text-center mt-1 mb-3">
                                         {{ product.description }}</p>
 
                                     <audio :ref="el => setAudioRef(product.id, el)" :src="`/storage/${product.file}`" preload="none" />
@@ -301,14 +307,15 @@ const daySong = computed(() => products.value.find(p => p.is_day))
                                         </button>
                                     </div>
                                 </div>
+                            </div>
                         </div>
                     </div>
 
-                    <div class="p-6  bg-white dark:bg-gray-900 rounded-2xl shadow-md max-w-2xl mx-auto">
+                    <div v-else class="p-6 mt-10  bg-white dark:bg-gray-900 rounded-2xl shadow-md max-w-2xl mx-auto">
                         <h1 class="text-2xl font-semibold mb-4 text-gray-800 dark:text-white">Müzik Ekle</h1>
 
                         <form @submit.prevent="submitForm" class="space-y-4">
-                            <div>
+                            <div class="py-3">
                                 <label class="block mb-1 text-sm text-gray-700 dark:text-white">Kategori</label>
                                 <select v-model="form.category_id"
                                         class="w-full px-4 py-2 rounded border border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-white">
@@ -317,27 +324,27 @@ const daySong = computed(() => products.value.find(p => p.is_day))
                                 </select>
                             </div>
 
-                            <div>
+                            <div class="py-2">
                                 <label class="block mb-1 text-sm text-gray-700 dark:text-white">Görsel Yükle
                                     (Opsiyonel)</label>
                                 <input type="file" @change="handleImageUpload"
                                        class="w-full text-sm text-gray-600 dark:text-white file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:bg-pink-500 file:text-white"/>
                             </div>
 
-                            <div>
+                            <div class="py-2">
                                 <label class="block mb-1 text-sm text-gray-700 dark:text-white">Müzik Dosyası</label>
                                 <input type="file" @change="handleFileUpload"
                                        class="w-full text-sm text-gray-600 dark:text-white file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:bg-pink-500 file:text-white"/>
                             </div>
 
-                            <div>
+                            <div class="py-1 pb-2">
                                 <label class="block mb-1 text-sm text-gray-700 dark:text-white">Açıklama</label>
-                                <textarea placeholder="Özel bir anlamı varsa yazabiliriz..." v-model="form.description"
+                                <textarea rows="3" placeholder="Özel bir anlamı varsa yazabiliriz..." v-model="form.description"
                                           class="w-full px-4 py-2 rounded border border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-white"/>
                             </div>
 
                             <button type="submit"
-                                    class="px-6 py-2 bg-pink-500 text-white rounded hover:bg-pink-600 transition duration-200">
+                                    class="px-6 w-full py-2 bg-pink-500 text-white rounded hover:bg-pink-600 transition duration-200">
                                 Kaydet
                             </button>
                         </form>
