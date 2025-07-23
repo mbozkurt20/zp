@@ -287,10 +287,6 @@ const daySong = computed(() => products.value.find(p => p.is_day))
                                 class="border border-white text-xl px-5 rounded-full hover:bg-white hover:text-pink-900 font-bold text-white"
                                 @click="tab = 'add'">Yeni Ekle
                             </button>
-                            <button
-                                class="border border-white text-xl px-5 rounded-full hover:bg-white hover:text-pink-900 font-bold text-white"
-                                @click="tab = 'converter'">Dönüştürücü
-                            </button>
                         </div>
 
                         <div v-if="tab === 'list'">
