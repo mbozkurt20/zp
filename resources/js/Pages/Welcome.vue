@@ -132,6 +132,7 @@ const submitForm = async () => {
 
         toast.success('Müzik başarıyla yüklendi!')
 
+        tab.value = 'list'
         await fetchProducts();
     } catch (error) {
         console.error(error)
