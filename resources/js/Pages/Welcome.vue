@@ -361,9 +361,9 @@ const daySong = computed(() => products.value.find(p => p.is_day))
                                     class="w-full px-4 py-2 rounded border border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-white"
                                 />
                             </div>
-                            <div v-for="category in categories" :key="category.id" class="mb-2 space-y-6">
+                            <div v-for="category in categories" :key="category.id" class="mb-2 space-y-4">
                                 <h2 v-if="filteredProductsByCategory(category).length"
-                                    class="mx-auto text-center text-3xl font-bold text-white mb-4">
+                                    class="mx-auto text-center text-3xl font-bold text-white mb-4 mt-8">
                                     {{ category.name }}</h2>
 
                                 <div class="lg:col-span-3 grid sm:grid-cols-2 xl:grid-cols-3 gap-6">
