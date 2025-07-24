@@ -148,6 +148,25 @@ const handleImageUpload = (e) => {
     form.value.image = e.target.files[0]
 }
 
+const updateImage = async (id, event) => {
+    const file = event.target.files[0];
+    if (!file) return toast.warning("Bir dosya seçiniz");
+
+    const formData = new FormData();
+    formData.append('image', file);
+
+    try {
+        const res = await axios.post(`/songs/update-image/${id}`, formData, {
+            headers: { 'Content-Type': 'multipart/form-data' },
+        });
+
+        toast.success("Görsel güncellendi!");
+        await fetchProducts();
+    } catch (error) {
+        console.error(error);
+        toast.warning("Görsel güncellenemedi.");
+    }
+};
 function handleImageError() {
     document.getElementById('screenshot-container')?.classList.add('!hidden');
     document.getElementById('docs-card')?.classList.add('!row-span-1');
@@ -348,10 +367,37 @@ const daySong = computed(() => products.value.find(p => p.is_day))
                                          :key="product.id"
                                          class="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-md flex flex-col items-center"
                                     >
-                                        <img :src="`/storage/${product.image}`" alt="Şarkı"
-                                             class="w-28 h-28 object-cover rounded-full mb-3"
-                                             :class="{ 'spin-animation': currentSong === product.id }"
-                                        />
+                                        <div class="relative group">
+                                            <img :src="`/storage/${product.image}`" alt="Şarkı"
+                                                 class="w-28 h-28 object-cover rounded-full mb-3"
+                                                 :class="{ 'spin-animation': currentSong === product.id }"
+                                                 @change="event => updateImage(product.id, event)"
+                                            />
+
+                                            <button
+                                                @click="() => inputRefs[product.id].click()"
+                                                class="absolute bottom-1 right-1 bg-gray-900 rounded-full p-1 shadow hover:bg-pink-500 hover:text-white transition opacity-0 group-hover:opacity-100"
+                                            >
+                                                <svg xmlns="http://www.w3.org/2000/svg"
+                                                     class="h-4 w-4"
+                                                     fill="none"
+                                                     viewBox="0 0 24 24"
+                                                     stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                          d="M11 5H6a2 2 0 00-2 2v12a2 2 0 002 2h12a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L12 20l-4 1 1-4 9.586-9.586z"/>
+                                                </svg>
+                                            </button>
+
+                                            <!-- Hidden input -->
+                                            <input
+                                                type="file"
+                                                :ref="el => inputRefs[product.id] = el"
+                                                class="hidden"
+                                                @change="event => updateImage(product.id, event)"
+                                            />
+                                        </div>
+
+
                                         <h4 class="text-md font-semibold text-center text-gray-800 dark:text-white">
                                             {{ product.name }}</h4>
                                         <p class="text-sm text-gray-600 dark:text-gray-300 text-center mt-1 mb-3">
@@ -520,5 +566,7 @@ const daySong = computed(() => products.value.find(p => p.is_day))
     animation: spin 4s linear infinite;
 }
 
-
+.group:hover .group-hover\:opacity-100 {
+    opacity: 1;
+}
 </style>

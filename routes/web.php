@@ -57,6 +57,18 @@ Route::get('cache',function () {
     Artisan::call('route:clear');
 });
 
+Route::post('/songs/update-image/{id}', function (Request $request,$id) {
+    $song = Product::findOrFail($id);
+
+    if ($request->hasFile('image')) {
+        $path = $request->file('image')->store('songs', 'public');
+        $song->image = $path;
+        $song->save();
+    }
+
+    return response()->json(['message' => 'Image updated']);
+});
+
 Route::post('/songs', function (Request $request) {
     $request->validate([
         'name' => 'nullable|string|max:255',
