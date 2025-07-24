@@ -133,12 +133,12 @@ const submitForm = async () => {
                 file: null,
                 category_id: 1,
             }
+
+            tab.value = 'list'
         })
 
         toast.success('Müzik başarıyla yüklendi!')
         await fetchProducts();
-
-        tab.value = 'list'
     } catch (error) {
         console.error(error)
         toast.warning('Müzik Yüklenemedi')
@@ -198,7 +198,6 @@ const filteredProductsByCategory = (category) => {
             (typeof p.name === 'string' && p.name.toLowerCase().includes(query)))
     );
 };
-
 
 const messages = [
     "Seninle her şey daha güzel.",
