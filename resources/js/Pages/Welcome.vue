@@ -107,7 +107,9 @@ const pauseSong = (id) => {
 const handleFileUpload = (e) => {
     form.value.file = e.target.files[0]
 }
+const isLoading = ref(false);
 const submitForm = async () => {
+
     const formData = new FormData()
     formData.append('name', form.value.name)
     formData.append('slug', form.value.slug)
@@ -117,9 +119,12 @@ const submitForm = async () => {
     if (form.value.file) formData.append('file', form.value.file)
 
     try {
+        isLoading.value = true;
+
         await axios.post('/songs', formData, {
             headers: {'Content-Type': 'multipart/form-data'},
         }).finally(() => {
+            isLoading.value = false;
             form.value = {
                 name: '',
                 slug: '',
@@ -426,9 +431,14 @@ const daySong = computed(() => products.value.find(p => p.is_day))
                                               class="w-full px-4 py-2 rounded border border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-white"/>
                                 </div>
 
-                                <button type="submit"
+                                <button v-if="isLoading" type="submit"
                                         class="px-6 w-full py-2 bg-pink-500 text-white rounded hover:bg-pink-600 transition duration-200">
                                     Kaydet
+                                </button>
+
+                                <button v-else type="submit"
+                                        class="px-6 w-full py-2 bg-pink-500 text-white rounded hover:bg-pink-600 transition duration-200">
+                                    Kaydediliyor
                                 </button>
                             </form>
                         </div>
