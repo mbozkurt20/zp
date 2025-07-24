@@ -227,22 +227,27 @@ const messages = [
 ];
 
 let index = 0;
-let marquee = null;
 
 onMounted(() => {
-    marquee = document.getElementById('marquee-container');
+    const marquee = document.getElementById('marquee-container');
+
 
     function updateMarquee() {
         if (!marquee) return;
-        marquee.classList.remove('animate-slide');
-        void marquee.offsetWidth;
-        marquee.textContent = `"${messages[index]}"`;
-        marquee.classList.add('animate-slide');
-        index = (index + 1) % messages.length;
+        marquee.classList.remove('opacity-100');
+        marquee.classList.add('opacity-0');
+
+        setTimeout(() => {
+            marquee.textContent = `"${messages[index]}"`;
+            marquee.classList.remove('opacity-0');
+            marquee.classList.add('opacity-100');
+            index = (index + 1) % messages.length;
+        }, 500);
     }
 
     updateMarquee();
     setInterval(updateMarquee, 8000);
+
 });
 
 const setAsDay = async (id) => {
@@ -288,12 +293,10 @@ const daySong = computed(() => products.value.find(p => p.is_day))
                 <img class="h-10" src="/public/images/ZM2014Logo.png" alt="">
                 <div class="relative w-full sm:w-[400px] overflow-hidden mt-2 sm:mt-0 h-6">
                     <div id="marquee-container"
-                         class="absolute whitespace-nowrap text-white font-medium text-sm animate-slide">
-                        "Seninle her şey daha güzel."
+                         class="absolute whitespace-nowrap text-white font-medium text-sm opacity-0 transition-opacity duration-1000">
                     </div>
                 </div>
             </div>
-
         </header>
 
         <div class="py-5 dark:text-white/50 " style="background: #f116bd">
@@ -445,7 +448,7 @@ const daySong = computed(() => products.value.find(p => p.is_day))
                              class="p-6 mt-10  bg-white dark:bg-gray-900 rounded-2xl shadow-md max-w-2xl mx-auto">
                             <h1 class="text-2xl font-semibold mb-4 text-gray-800 dark:text-white">Müzik Ekle</h1>
 
-                            <form @submit.prevent="submitForm" class="space-y-4">
+                            <form @submit.prevent="submitForm" enctype="multipart/form-data" class="space-y-4">
                                 <div class="py-3">
                                     <label class="block mb-1 text-sm text-gray-700 dark:text-white">Kategori</label>
                                     <select v-model="form.category_id"
@@ -476,7 +479,7 @@ const daySong = computed(() => products.value.find(p => p.is_day))
                                               class="w-full px-4 py-2 rounded border border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-white"/>
                                 </div>
 
-                                <button v-if="isLoading" type="submit"
+                                <button v-if="!isLoading" type="submit"
                                         class="px-6 w-full py-2 bg-pink-500 text-white rounded hover:bg-pink-600 transition duration-200">
                                     Kaydet
                                 </button>
