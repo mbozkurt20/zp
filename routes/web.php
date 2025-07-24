@@ -62,8 +62,8 @@ Route::post('/songs', function (Request $request) {
         'name' => 'nullable|string|max:255',
         'description' => 'nullable|string',
         'category_id' => 'nullable|integer|exists:categories,id',
-        'image' => 'nullable|image|max:2048',
-        'file' => 'required|file',
+        'image' => 'nullable|image|max:10240', // 10MB
+        'file' => 'required|file|max:51200',   // 50MB mp3 dosyaları için
     ]);
 
     $imagePath = $request->file('image') ? $request->file('image')->store('images', 'public') : null;
