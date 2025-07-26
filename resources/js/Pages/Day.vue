@@ -250,18 +250,6 @@ onMounted(() => {
     setInterval(updateMarquee, 8000);
 
 });
-
-const setAsDay = async (id) => {
-    try {
-        await axios.post(`/songs/set-day/${id}`);
-        toast.success("Günün şarkısı başarıyla güncellendi!");
-        await fetchProducts();
-    } catch (error) {
-        console.error(error);
-        toast.warning("Günün şarkısı güncellenemedi.");
-    }
-}
-
 const setAsRemove = async (id) => {
     try {
         await axios.post(`/songs/remove/${id}`);
@@ -284,7 +272,6 @@ const daySong = computed(() => products.value.find(p => p.is_day))
 </script>
 
 <template>
-    <div v-if="enterPassword === password">
         <Head title="Hoşgeldiniz"/>
         <header
             style="background: #ec49c5"
@@ -381,38 +368,6 @@ const daySong = computed(() => products.value.find(p => p.is_day))
                 📚<span>Kataloglar</span>
             </Link>
         </div>
-    </div>
-    <div
-        class="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 dark:text-white/50 relative"
-        v-else
-        style="background-image: url('/images/italya2.jpg'); background-size: cover; background-position: center; background-repeat: no-repeat"
-    >
-        <!-- Geçen gün bilgisi -->
-        <div
-            class="absolute top-10 text-center text-white text-3xl font-semibold animate-fadeIn drop-shadow-lg bg-black/50 px-6 py-2 rounded-xl backdrop-blur-md"
-        >
-            {{ daysPassed }}.Gün
-        </div>
-
-        <!-- OTP input alanları -->
-        <div class="w-full max-w-md px-4">
-            <div class="flex justify-center gap-3 mt-20">
-                <input
-                    v-for="(digit, index) in otp"
-                    :key="index"
-                    v-model="otp[index]"
-                    type="text"
-                    inputmode="numeric"
-                    maxlength="1"
-                    class="w-14 h-14 text-center text-gray-900 text-2xl border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-pink-500 dark:bg-gray-800 dark:text-white bg-white/80 backdrop-blur-sm"
-                    @input="onInput($event, index)"
-                    @keydown="onKeyDown($event, index)"
-                    ref="inputRefs"
-                />
-            </div>
-        </div>
-    </div>
-
 </template>
 
 <style scoped>

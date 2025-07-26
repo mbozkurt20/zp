@@ -17,6 +17,7 @@ return new class extends Migration
             $table->string('name')->nullable();
             $table->string('slug')->unique();
             $table->boolean('is_day')->default(false);
+            $table->boolean('is_favorite')->default(false);
             $table->string('image')->nullable();
             $table->string('file');
             $table->text('description')->nullable();

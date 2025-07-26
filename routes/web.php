@@ -19,18 +19,39 @@ Route::get('/', function () {
     ]);
 })->name('welcome');
 
-Route::get('/category/{id}', function ($id) {
-    $products = Product::where('category_id', $id)->with('variants')->get();
-
-    return Inertia::render('Products', [
-        'products' => $products,
-        'canLogin' => Route::has('login'),
-        'canRegister' => Route::has('register'),
-        'laravelVersion' => Application::VERSION,
-        'isLogin' => auth()->check(),
-        'phpVersion' => PHP_VERSION,
+Route::get('/favorites', function () {
+    return Inertia::render('Favorites', [
+        'products' => \App\Models\Product::where('is_favorite', true)->get()
     ]);
-})->name('products');
+})->name('favorites');
+
+Route::get('/add', function () {
+    return Inertia::render('Add', [
+        'categories' => \App\Models\Category::all()
+    ]);
+})->name('add');
+
+Route::get('/categories-all', function () {
+    return Inertia::render('Categories', [
+        'categories' => \App\Models\Category::all()
+    ]);
+})->name('categories.all');
+
+Route::get('/day', function () {
+    return Inertia::render('Day', [
+        'categories' => \App\Models\Category::all()
+    ]);
+})->name('day');
+
+Route::get('/category/{id}', function ($id) {
+    $category = \App\Models\Category::findOrFail($id);
+    $products = \App\Models\Product::where('category_id', $id)->get();
+
+    return Inertia::render('CategorySongs', [
+        'category' => $category,
+        'products' => $products
+    ]);
+})->name('category.songs');
 
 Route::post('songs/set-day/{id}', function ($id) {
     Product::query()->update(['is_day' => false]);
@@ -42,19 +63,19 @@ Route::post('songs/set-day/{id}', function ($id) {
     return response()->json(['message' => 'Günün Şarkısı Değiştirildi']);
 });
 
+Route::post('songs/favorite/{id}', function ($id) {
+    $product = Product::find($id);
+
+    $product->is_favorite = !$product->is_favorite;
+    $product->update();
+    return response()->json(['message' => 'Günün Şarkısı Değiştirildi']);
+});
+
 Route::post('songs/remove/{id}', function ($id) {
     $product = Product::find($id);
     $product->delete();
 
     return response()->json(['message' => 'Günün Şarkısı Silindi']);
-});
-
-Route::get('cache',function () {
-    Artisan::call('cache:clear');
-    Artisan::call('config:clear');
-    Artisan::call('config:cache');
-    Artisan::call('view:clear');
-    Artisan::call('route:clear');
 });
 
 Route::post('/songs/update-image/{id}', function (Request $request,$id) {
@@ -93,7 +114,6 @@ Route::post('/songs', function (Request $request) {
     return response()->json(['message' => 'Şarkı Başarıyla Eklendi!', 'data' => $song]);
 });
 
-
 Route::get('/dashboard', function () {
     $products = Product::with('variants')->get();
 
@@ -120,7 +140,6 @@ Route::get('/orders', function () {
 })->middleware(['auth', 'verified'])->name('orders');
 
 Route::get('/products', [\App\Http\Controllers\BasketController::class, 'products']);
-Route::get('/categories', [\App\Http\Controllers\BasketController::class, 'categories']);
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

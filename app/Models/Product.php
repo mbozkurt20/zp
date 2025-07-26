@@ -45,6 +45,7 @@ class Product extends Model
       'name',
       'slug',
       'is_day',
+      'is_favourite',
       'file',
       'image',
       'description',

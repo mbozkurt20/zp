@@ -284,7 +284,6 @@ const daySong = computed(() => products.value.find(p => p.is_day))
 </script>
 
 <template>
-    <div v-if="enterPassword === password">
         <Head title="Hoşgeldiniz"/>
         <header
             style="background: #ec49c5"
@@ -299,120 +298,106 @@ const daySong = computed(() => products.value.find(p => p.is_day))
         <div class="py-5 dark:text-white/50 bg-gray-900">
             <div class="relative flex min-h-screen flex-col w-full  mx-auto max-w-7xl">
                 <div class="relative w-full">
-                    <main class="px-3 sm:px-8">
-                        <section v-if="products.find(p => p.is_day)" class="my-10 grid grid-cols-1 lg:grid-cols-4 gap-6">
-                            <div
-                                class="lg:col-span-2 bg-gradient-to-b from-white/90 to-pink-50 dark:from-gray-900 dark:to-pink-900
-           text-pink-600 dark:text-pink-400 p-6 rounded-2xl shadow-lg flex flex-col items-center"
-                            >
-                                <h2 class="text-2xl font-extrabold mb-6 tracking-wide">🎵 Günün Şarkısı</h2>
+                    <main class="px-4 sm:px-8">
+                        <div class="p-6 mt-10 bg-white dark:bg-gray-900 rounded-2xl shadow-md max-w-2xl mx-auto">
+                            <form @submit.prevent="submitForm" enctype="multipart/form-data" class="space-y-6">
 
-                                <div v-if="daySong" class="flex flex-col items-center">
-                                    <img
-                                        :src="`/storage/${daySong.image}`"
-                                        alt="Günün Şarkısı"
-                                        class="w-36 h-36 object-cover rounded-full mb-5 shadow-lg"
-                                        :class="{ 'spin-animation': currentSong === daySong.id }"
-                                    />
-
-                                    <p class="font-bold text-xl mb-1 text-center">{{ daySong.name }}</p>
-                                    <p class="text-sm mb-5 text-center text-pink-500/80 dark:text-pink-300/70 max-w-md">
-                                        {{ daySong.description }}
-                                    </p>
-
-                                    <audio :ref="el => setAudioRef(daySong.id, el)" :src="`/storage/${daySong.file}`" preload="none" />
-
-                                    <div class="flex gap-4">
-                                        <button
-                                            v-if="currentSong !== daySong.id"
-                                            @click="playSong(daySong.id)"
-                                            class="px-6 py-2 rounded-lg bg-pink-600 text-white font-semibold shadow hover:bg-pink-700 transition"
-                                            aria-label="Şarkıyı oynat"
-                                        >
-                                            Oynat
-                                        </button>
-                                        <button
-                                            v-else
-                                            @click="pauseSong(daySong.id)"
-                                            class="px-6 py-2 rounded-lg bg-pink-600 text-white font-semibold shadow hover:bg-pink-700 transition"
-                                            aria-label="Şarkıyı durdur"
-                                        >
-                                            Durdur
-                                        </button>
-                                    </div>
+                                <div>
+                                    <label class="block mb-2 text-sm font-medium text-gray-700 dark:text-white">Kategori</label>
+                                    <select
+                                        v-model="form.category_id"
+                                        class="w-full px-4 py-2 rounded border border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-white focus:ring-pink-500 focus:border-pink-500 transition"
+                                    >
+                                        <option v-for="category in categories" :key="category.id" :value="category.id">
+                                            {{ category.name }}
+                                        </option>
+                                    </select>
                                 </div>
-                            </div>
-                        </section>
 
+                                <div>
+                                    <label class="block mb-2 text-sm font-medium text-gray-700 dark:text-white">Görsel Yükle (Opsiyonel)</label>
+                                    <input
+                                        type="file"
+                                        @change="handleImageUpload"
+                                        class="w-full text-sm text-gray-600 dark:text-white
+                 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0
+                 file:text-sm file:bg-pink-500 file:text-white
+                 hover:file:bg-pink-600 cursor-pointer
+                 transition"
+                                    />
+                                </div>
+
+                                <div>
+                                    <label class="block mb-2 text-sm font-medium text-gray-700 dark:text-white">Müzik Dosyası</label>
+                                    <input
+                                        type="file"
+                                        @change="handleFileUpload"
+                                        class="w-full text-sm text-gray-600 dark:text-white
+                 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0
+                 file:text-sm file:bg-pink-500 file:text-white
+                 hover:file:bg-pink-600 cursor-pointer
+                 transition"
+                                    />
+                                </div>
+
+                                <div>
+                                    <label class="block mb-2 text-sm font-medium text-gray-700 dark:text-white">Açıklama</label>
+                                    <textarea
+                                        rows="4"
+                                        placeholder="Özel bir anlamı varsa yazabiliriz..."
+                                        v-model="form.description"
+                                        class="w-full px-4 py-2 rounded border border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-white resize-none
+                 focus:ring-pink-500 focus:border-pink-500 transition"
+                                    ></textarea>
+                                </div>
+
+                                <button
+                                    type="submit"
+                                    :disabled="isLoading"
+                                    class="w-full py-3 bg-pink-500 text-white rounded hover:bg-pink-600 disabled:opacity-50 disabled:cursor-not-allowed transition duration-200 font-semibold"
+                                >
+                                    {{ isLoading ? 'Kaydediliyor...' : 'Kaydet' }}
+                                </button>
+                            </form>
+                        </div>
                     </main>
+
                 </div>
             </div>
         </div>
 
-        <div
-            class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-300 dark:bg-gray-900 dark:border-gray-700 flex justify-around py-2 z-50"
-        >
-            <Link
-                :href="route('day')"
-                class="flex flex-col items-center text-sm"
-                :class="$page.url === '/day' ? 'text-pink-600 font-bold' : 'text-gray-600'"
-            >
-                🎵<span>Günün Şarkısı</span>
-            </Link>
-            <Link
-                :href="route('add')"
-                class="flex flex-col items-center text-sm"
-                :class="$page.url === '/add' ? 'text-pink-600 font-bold' : 'text-gray-600'"
-            >
-                ➕<span>Yeni Ekle</span>
-            </Link>
-            <Link
-                :href="route('favorites')"
-                class="flex flex-col items-center text-sm"
-                :class="$page.url === '/favorites' ? 'text-pink-600 font-bold' : 'text-gray-600'"
-            >
-                ⭐<span>Favoriler</span>
-            </Link>
-            <Link
-                :href="route('categories.all')"
-                class="flex flex-col items-center text-sm"
-                :class="$page.url === '/categories-all' ? 'text-pink-600 font-bold' : 'text-gray-600'"
-            >
-                📚<span>Kataloglar</span>
-            </Link>
-        </div>
-    </div>
     <div
-        class="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 dark:text-white/50 relative"
-        v-else
-        style="background-image: url('/images/italya2.jpg'); background-size: cover; background-position: center; background-repeat: no-repeat"
+        class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-300 dark:bg-gray-900 dark:border-gray-700 flex justify-around py-2 z-50"
     >
-        <!-- Geçen gün bilgisi -->
-        <div
-            class="absolute top-10 text-center text-white text-3xl font-semibold animate-fadeIn drop-shadow-lg bg-black/50 px-6 py-2 rounded-xl backdrop-blur-md"
+        <Link
+            :href="route('day')"
+            class="flex flex-col items-center text-sm"
+            :class="$page.url === '/day' ? 'text-pink-600 font-bold' : 'text-gray-600'"
         >
-            {{ daysPassed }}.Gün
-        </div>
-
-        <!-- OTP input alanları -->
-        <div class="w-full max-w-md px-4">
-            <div class="flex justify-center gap-3 mt-20">
-                <input
-                    v-for="(digit, index) in otp"
-                    :key="index"
-                    v-model="otp[index]"
-                    type="text"
-                    inputmode="numeric"
-                    maxlength="1"
-                    class="w-14 h-14 text-center text-gray-900 text-2xl border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-pink-500 dark:bg-gray-800 dark:text-white bg-white/80 backdrop-blur-sm"
-                    @input="onInput($event, index)"
-                    @keydown="onKeyDown($event, index)"
-                    ref="inputRefs"
-                />
-            </div>
-        </div>
+            🎵<span>Günün Şarkısı</span>
+        </Link>
+        <Link
+            :href="route('add')"
+            class="flex flex-col items-center text-sm"
+            :class="$page.url === '/add' ? 'text-pink-600 font-bold' : 'text-gray-600'"
+        >
+            ➕<span>Yeni Ekle</span>
+        </Link>
+        <Link
+            :href="route('favorites')"
+            class="flex flex-col items-center text-sm"
+            :class="$page.url === '/favorites' ? 'text-pink-600 font-bold' : 'text-gray-600'"
+        >
+            ⭐<span>Favoriler</span>
+        </Link>
+        <Link
+            :href="route('categories.all')"
+            class="flex flex-col items-center text-sm"
+            :class="$page.url === '/categories-all' ? 'text-pink-600 font-bold' : 'text-gray-600'"
+        >
+            📚<span>Kataloglar</span>
+        </Link>
     </div>
-
 </template>
 
 <style scoped>
