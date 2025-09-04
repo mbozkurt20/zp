@@ -5,7 +5,6 @@ use App\Models\Basket;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\ProductVariant;
-use Illuminate\Foundation\Application;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Route;
@@ -15,9 +14,35 @@ use Picqer\Barcode\BarcodeGeneratorPNG;
 
 Route::get('/', function () {
     return Inertia::render('Welcome', [
-       'categories' => \App\Models\Category::all()
+       'imagess' => \App\Models\Product::all()
     ]);
 })->name('welcome');
+Route::post('/create-photo', function (Request $request) {
+    $request->validate([
+        'description' => 'nullable|string',
+        'file' => 'nullable|image|max:10240', // 10MB
+    ]);
+
+    // Görsel yükleme
+    $imagePath = $request->file('file')
+        ? $request->file('file')->store('images', 'public')
+        : null;
+
+
+
+    // Yeni kayıt
+    $song = Product::create([
+        'slug' =>  Str::slug(Str::random(25)),
+        'description' => $request->description,
+        'image' => $imagePath,
+    ]);
+
+    return response()->json([
+        'success' => true,
+        'message' => 'Görsel Başarıyla Eklendi!',
+        'data' => $song,
+    ]);
+});
 
 Route::get('/favorites', function () {
     return Inertia::render('Favorites', [
@@ -78,6 +103,10 @@ Route::post('songs/remove/{id}', function ($id) {
     return response()->json(['message' => 'Günün Şarkısı Silindi']);
 });
 
+
+
+
+
 Route::post('/songs/update-image/{id}', function (Request $request,$id) {
     $song = Product::findOrFail($id);
 
@@ -88,30 +117,6 @@ Route::post('/songs/update-image/{id}', function (Request $request,$id) {
     }
 
     return response()->json(['message' => 'Image updated']);
-});
-
-Route::post('/songs', function (Request $request) {
-    $request->validate([
-        'name' => 'nullable|string|max:255',
-        'description' => 'nullable|string',
-        'category_id' => 'nullable|integer|exists:categories,id',
-        'image' => 'nullable|image|max:10240', // 10MB
-        'file' => 'required|file|max:51200',   // 50MB mp3 dosyaları için
-    ]);
-
-    $imagePath = $request->file('image') ? $request->file('image')->store('images', 'public') : null;
-    $filePath = $request->file('file')->store('songs', 'public');
-
-    $song = Product::create([
-        'name' => $request->name,
-        'slug' => Str::slug(rand(11111111, 99999999), '-'),
-        'description' => $request->description?? $request->file('file')->getClientOriginalName(),
-        'image' => $imagePath,
-        'file' => $filePath,
-        'category_id' => $request->category_id ?? 1,
-    ]);
-
-    return response()->json(['message' => 'Şarkı Başarıyla Eklendi!', 'data' => $song]);
 });
 
 Route::get('/dashboard', function () {

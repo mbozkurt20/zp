@@ -1,463 +1,321 @@
-<script setup>
-import {Head, Link,} from '@inertiajs/vue3';
-import {onMounted, reactive, ref, computed} from "vue";
-import axios from "axios";
-import {toast} from "vue3-toastify";
-
-const props = defineProps(['categories']);
-const tab = ref('day');
-const otpLength = 4
-const otp = reactive(Array(otpLength).fill(''))
-const inputRefs = ref([])
-const password = '2105';
-const enterPassword = ref('');
-
-const onInput = (e, index) => {
-    const value = e.target.value
-
-    // Sadece rakam girilmesine izin ver
-    if (!/^\d$/.test(value)) {
-        otp[index] = ''
-        return
-    }
-
-    otp[index] = value
-
-    // Son kutuda değilsek, bir sonrakine geç
-    if (index < otpLength - 1) {
-        inputRefs.value[index + 1]?.focus()
-    } else {
-        // Son kutuya girildiyse submit fonksiyonu tetikle
-        submitOtp()
-    }
-}
-
-const onKeyDown = (e, index) => {
-    if (e.key === 'Backspace') {
-        if (otp[index] === '') {
-            if (index > 0) {
-                otp[index - 1] = ''
-                inputRefs.value[index - 1]?.focus()
-            }
-        }
-    }
-}
-
-const submitOtp = () => {
-    const code = otp.join('')
-
-    if (code !== password) {
-        return toast("Hatalı Bilgiler", {
-            "theme": "auto",
-            "type": "default",
-            "dangerouslyHTMLString": true
-        })
-    }
-
-    enterPassword.value = code;
-
-    return toast("Hoşgelginiz...", {
-        "theme": "auto",
-        "type": "success",
-        "dangerouslyHTMLString": true
-    })
-}
-
-const form = ref({
-    name: '',
-    slug: '',
-    description: '',
-    image: null,
-    file: null,
-    category_id: 1,
-});
-
-const currentSong = ref(null)
-const audioRefs = ref({})
-
-const setAudioRef = (id, el) => {
-    if (el) {
-        audioRefs.value[id] = el;
-    }
-};
-
-const playSong = (id) => {
-    if (currentSong.value && currentSong.value !== id) {
-        pauseSong(currentSong.value);
-    }
-
-    const audio = audioRefs.value[id];
-    if (audio) {
-        audio.play();
-        currentSong.value = id;
-    }
-};
-
-const pauseSong = (id) => {
-    const audio = audioRefs.value[id];
-    if (audio) {
-        audio.pause();
-        audio.currentTime = 0;
-    }
-
-    if (currentSong.value === id) {
-        currentSong.value = null;
-    }
-};
-const handleFileUpload = (e) => {
-    form.value.file = e.target.files[0]
-}
-const isLoading = ref(false);
-const submitForm = async () => {
-
-    const formData = new FormData()
-    formData.append('name', form.value.name)
-    formData.append('slug', form.value.slug)
-    formData.append('description', form.value.description)
-    formData.append('category_id', form.value.category_id)
-    if (form.value.image) formData.append('image', form.value.image)
-    if (form.value.file) formData.append('file', form.value.file)
-
-    try {
-        isLoading.value = true;
-
-        await axios.post('/songs', formData, {
-            headers: {'Content-Type': 'multipart/form-data'},
-        }).finally(() => {
-            isLoading.value = false;
-            form.value = {
-                name: '',
-                slug: '',
-                description: '',
-                image: null,
-                file: null,
-                category_id: 1,
-            }
-
-            tab.value = 'list'
-        })
-
-        toast.success('Müzik başarıyla yüklendi!')
-        await fetchProducts();
-    } catch (error) {
-        console.error(error)
-        toast.warning('Müzik Yüklenemedi')
-    }
-}
-const handleImageUpload = (e) => {
-    form.value.image = e.target.files[0]
-}
-
-const updateImage = async (id, event) => {
-    const file = event.target.files[0];
-    if (!file) return toast.warning("Bir dosya seçiniz");
-
-    const formData = new FormData();
-    formData.append('image', file);
-
-    try {
-        const res = await axios.post(`/songs/update-image/${id}`, formData, {
-            headers: {'Content-Type': 'multipart/form-data'},
-        });
-
-        toast.success("Görsel güncellendi!");
-        await fetchProducts();
-    } catch (error) {
-        console.error(error);
-        toast.warning("Görsel güncellenemedi.");
-    }
-};
-
-function handleImageError() {
-    document.getElementById('screenshot-container')?.classList.add('!hidden');
-    document.getElementById('docs-card')?.classList.add('!row-span-1');
-    document.getElementById('docs-card-content')?.classList.add('!flex-row');
-    document.getElementById('background')?.classList.add('!hidden');
-}
-
-const products = ref([])
-const categories = ref(props.categories)
-
-const searchQuery = ref('');
-
-const fetchProducts = async () => {
-    const response = await axios.get('/products');
-    products.value = response.data.data
-}
-
-const fetchCategories = async () => {
-    const response = await axios.get('/categories');
-    categories.value = response.data.data ?? []
-}
-const audioRef = ref(null)
-
-const playAudio = (file) => {
-    if (!file) return toast.warning("Müzik dosyası mevcut değil.");
-
-    const url = typeof file === 'string' ? `/storage/${file}` : URL.createObjectURL(file);
-    if (audioRef.value) {
-        audioRef.value.src = url;
-        audioRef.value.load(); // önemli!
-        audioRef.value.play();
-    }
-}
-onMounted(() => {
-    inputRefs.value[0]?.focus()
-
-    fetchCategories();
-    fetchProducts();
-});
-
-const filteredProductsByCategory = (category) => {
-    const query = searchQuery.value.toLowerCase().trim();
-
-    return products.value.filter(p =>
-        p.category_id === category.id &&
-        (!query ||
-            (typeof p.description === 'string' && p.description.toLowerCase().includes(query)) ||
-            (typeof p.name === 'string' && p.name.toLowerCase().includes(query)))
-    );
-};
-
-const messages = [
-    "Seninle her şey daha güzel.",
-    "Kalbim hep sana ait.",
-    "Bir gülüşün tüm karanlığı aydınlatır.",
-    "Seninle geçen her an bir ömre bedel.",
-    "Aşk, senin adınla başlar.",
-];
-
-let index = 0;
-
-onMounted(() => {
-    const marquee = document.getElementById('marquee-container');
-
-
-    function updateMarquee() {
-        if (!marquee) return;
-        marquee.classList.remove('opacity-100');
-        marquee.classList.add('opacity-0');
-
-        setTimeout(() => {
-            marquee.textContent = `"${messages[index]}"`;
-            marquee.classList.remove('opacity-0');
-            marquee.classList.add('opacity-100');
-            index = (index + 1) % messages.length;
-        }, 500);
-    }
-
-    updateMarquee();
-    setInterval(updateMarquee, 8000);
-
-});
-
-const setAsDay = async (id) => {
-    try {
-        await axios.post(`/songs/set-day/${id}`);
-        toast.success("Günün şarkısı başarıyla güncellendi!");
-        await fetchProducts();
-    } catch (error) {
-        console.error(error);
-        toast.warning("Günün şarkısı güncellenemedi.");
-    }
-}
-
-const setAsRemove = async (id) => {
-    try {
-        await axios.post(`/songs/remove/${id}`);
-        toast.success("Şarkı başarıyla silindi!");
-        await fetchProducts();
-    } catch (error) {
-        console.error(error);
-        toast.warning("Şarkı silinemedi.");
-    }
-}
-const daysPassed = computed(() => {
-    const startDate = new Date('2025-05-21');
-    const today = new Date();
-    const diff = today - startDate;
-    console.log(Math.floor(diff / (1000 * 60 * 60 * 24)))
-    return Math.floor(diff / (1000 * 60 * 60 * 24));
-});
-
-const daySong = computed(() => products.value.find(p => p.is_day))
-</script>
-
 <template>
-    <div v-if="enterPassword === password">
-        <Head title="Hoşgeldiniz"/>
-        <header
-            style="background: #ec49c5"
-            class=" flex mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 sticky top-0 z-50  backdrop-blur shadow flex-col sm:flex-row sm:items-center sm:justify-between py-2"
-        >
-            <div class="flex items-center gap-2">
-                <img class="h-10" src="/public/images/ZM2014Logo.png" alt="">
-                <h1 class="py-4 text-xl text-white font-bold text-center mx-auto">Z&M Malikanesi</h1>
-            </div>
-        </header>
+    <div class="gallery-wrapper">
+        <!-- Başlık & Logo -->
+        <div class="gallery-header">
+            <img src="/public/images/zp.png" alt="Z&P Logo" class="logo" />
+            <h1>Dünyasına Hoşgeldiniz!</h1>
+        </div>
 
-        <div class="py-5 dark:text-white/50 bg-gray-900">
-            <div class="relative flex min-h-screen flex-col w-full  mx-auto max-w-7xl">
-                <div class="relative w-full">
-                    <main class="px-3 sm:px-8">
-                        <section v-if="products.find(p => p.is_day)" class="my-10 grid grid-cols-1 lg:grid-cols-4 gap-6">
-                            <div
-                                class="lg:col-span-2 bg-gradient-to-b from-white/90 to-pink-50 dark:from-gray-900 dark:to-pink-900
-           text-pink-600 dark:text-pink-400 p-6 rounded-2xl shadow-lg flex flex-col items-center"
-                            >
-                                <h2 class="text-2xl font-extrabold mb-6 tracking-wide">🎵 Günün Şarkısı</h2>
-
-                                <div v-if="daySong" class="flex flex-col items-center">
-                                    <img
-                                        :src="`/storage/${daySong.image}`"
-                                        alt="Günün Şarkısı"
-                                        class="w-36 h-36 object-cover rounded-full mb-5 shadow-lg"
-                                        :class="{ 'spin-animation': currentSong === daySong.id }"
-                                    />
-
-                                    <p class="font-bold text-xl mb-1 text-center">{{ daySong.name }}</p>
-                                    <p class="text-sm mb-5 text-center text-pink-500/80 dark:text-pink-300/70 max-w-md">
-                                        {{ daySong.description }}
-                                    </p>
-
-                                    <audio :ref="el => setAudioRef(daySong.id, el)" :src="`/storage/${daySong.file}`" preload="none" />
-
-                                    <div class="flex gap-4">
-                                        <button
-                                            v-if="currentSong !== daySong.id"
-                                            @click="playSong(daySong.id)"
-                                            class="px-6 py-2 rounded-lg bg-pink-600 text-white font-semibold shadow hover:bg-pink-700 transition"
-                                            aria-label="Şarkıyı oynat"
-                                        >
-                                            Oynat
-                                        </button>
-                                        <button
-                                            v-else
-                                            @click="pauseSong(daySong.id)"
-                                            class="px-6 py-2 rounded-lg bg-pink-600 text-white font-semibold shadow hover:bg-pink-700 transition"
-                                            aria-label="Şarkıyı durdur"
-                                        >
-                                            Durdur
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </section>
-
-                    </main>
+        <!-- Galeri -->
+        <div class="gallery-container">
+            <div
+                v-for="(item, index) in sortedImages"
+                :key="item.id"
+                class="gallery-item"
+                :style="{ backgroundImage: `url('/storage/${item.image}')` }"
+                @mouseover="hoverIndex = index"
+                @mouseleave="hoverIndex = null"
+                @click="openLightbox(index)"
+                :class="{ hovered: hoverIndex === index }"
+            >
+                <div class="info-overlay">
+                    <div class="title">{{ item.description }}</div>
+                    <div class="date">{{ new Date(item.created_at).toLocaleDateString('tr-TR', { year:'numeric', month:'long', day:'numeric' }) }}</div>
                 </div>
             </div>
         </div>
 
-        <div
-            class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-300 dark:bg-gray-900 dark:border-gray-700 flex justify-around py-2 z-50"
-        >
-            <Link
-                :href="route('day')"
-                class="flex flex-col items-center text-sm"
-                :class="$page.url === '/day' ? 'text-pink-600 font-bold' : 'text-gray-600'"
-            >
-                🎵<span>Günün Şarkısı</span>
-            </Link>
-            <Link
-                :href="route('add')"
-                class="flex flex-col items-center text-sm"
-                :class="$page.url === '/add' ? 'text-pink-600 font-bold' : 'text-gray-600'"
-            >
-                ➕<span>Yeni Ekle</span>
-            </Link>
-            <Link
-                :href="route('favorites')"
-                class="flex flex-col items-center text-sm"
-                :class="$page.url === '/favorites' ? 'text-pink-600 font-bold' : 'text-gray-600'"
-            >
-                ⭐<span>Favoriler</span>
-            </Link>
-            <Link
-                :href="route('categories.all')"
-                class="flex flex-col items-center text-sm"
-                :class="$page.url === '/categories-all' ? 'text-pink-600 font-bold' : 'text-gray-600'"
-            >
-                📚<span>Kataloglar</span>
-            </Link>
-        </div>
-    </div>
-    <div
-        class="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 dark:text-white/50 relative"
-        v-else
-        style="background-image: url('/images/italya2.jpg'); background-size: cover; background-position: center; background-repeat: no-repeat"
-    >
-        <!-- Geçen gün bilgisi -->
-        <div
-            class="absolute top-10 text-center text-white text-3xl font-semibold animate-fadeIn drop-shadow-lg bg-black/50 px-6 py-2 rounded-xl backdrop-blur-md"
-        >
-            {{ daysPassed }}.Gün
-        </div>
+        <!-- Lightbox -->
+        <div v-if="lightboxOpen" class="lightbox" @click.self="closeLightbox">
+            <span class="close-btn" @click="closeLightbox">&times;</span>
 
-        <!-- OTP input alanları -->
-        <div class="w-full max-w-md px-4">
-            <div class="flex justify-center gap-3 mt-20">
-                <input
-                    v-for="(digit, index) in otp"
-                    :key="index"
-                    v-model="otp[index]"
-                    type="text"
-                    inputmode="numeric"
-                    maxlength="1"
-                    class="w-14 h-14 text-center text-gray-900 text-2xl border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-pink-500 dark:bg-gray-800 dark:text-white bg-white/80 backdrop-blur-sm"
-                    @input="onInput($event, index)"
-                    @keydown="onKeyDown($event, index)"
-                    ref="inputRefs"
-                />
+            <!-- Random şekiller -->
+            <div class="shapes">
+        <span
+            v-for="n in 30"
+            :key="n"
+            class="shape"
+            :style="{
+            '--randX': Math.random() * 100,
+            '--randY': Math.random() * 100,
+            'animation-delay': `${Math.random() * 10}s`,
+            'animation-duration': `${10 + Math.random() * 15}s`
+          }"
+        />
+            </div>
+
+            <img
+                :src="`/storage/${sortedImages[currentIndex].image}`"
+                class="lightbox-img animate-in"
+            />
+            <div class="lightbox-controls">
+                <button @click.stop="prevImage">&#10094;</button>
+                <button @click.stop="nextImage">&#10095;</button>
             </div>
         </div>
     </div>
 
+    <div
+        class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-300 dark:bg-gray-900 dark:border-gray-700 flex justify-around py-2 z-50"
+    >
+        <Link
+            :href="route('welcome')"
+            class="flex flex-col items-center text-sm"
+            :class="$page.url === '/' ? 'text-pink-600 font-bold' : 'text-gray-600'"
+        >
+            <span>Galeri</span>
+        </Link>
+        <Link
+            :href="route('add')"
+            class="flex flex-col items-center text-sm"
+            :class="$page.url === '/add' ? 'text-pink-600 font-bold' : 'text-gray-600'"
+        >
+            <span>Yeni Ekle</span>
+        </Link>
+    </div>
 </template>
 
+<script setup>
+import { ref, onMounted, computed } from "vue";
+import axios from "axios";
+import {Link} from "@inertiajs/vue3";
+
+const hoverIndex = ref(null);
+const lightboxOpen = ref(false);
+const currentIndex = ref(0);
+const images = ref([]);
+
+// Backend'den ürünleri çek
+const fetchProducts = async () => {
+    const response = await axios.get('/products');
+    images.value = response.data.data;
+    console.log({ images: images.value });
+};
+
+onMounted(() => {
+    fetchProducts();
+});
+
+// Lightbox fonksiyonları
+function openLightbox(index) {
+    currentIndex.value = index;
+    lightboxOpen.value = true;
+}
+
+function closeLightbox() {
+    lightboxOpen.value = false;
+}
+
+function prevImage() {
+    currentIndex.value = (currentIndex.value - 1 + images.value.length) % images.value.length;
+}
+
+function nextImage() {
+    currentIndex.value = (currentIndex.value + 1) % images.value.length;
+}
+
+// Tarihe göre sıralama: en yeni en üstte
+const sortedImages = computed(() => {
+    return [...images.value].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+});
+</script>
+
 <style scoped>
-
-
-@keyframes slide {
-    0% {
-        transform: translateX(100%);
-    }
-    100% {
-        transform: translateX(-100%);
-    }
+/* GENEL WRAPPER */
+.gallery-wrapper {
+    min-height: 100vh;
+    padding: 20px;
+    font-family: 'Segoe UI', sans-serif;
+    background: radial-gradient(circle at 20% 30%, rgba(255,110,196,0.2), transparent 70%),
+    radial-gradient(circle at 80% 70%, rgba(120,115,245,0.2), transparent 70%),
+    linear-gradient(135deg, #1a001f, #2a002a, #1a001f);
+    background-size: cover;
 }
 
-.animate-slide {
-    animation: slide 6s linear infinite;
+/* BAŞLIK & LOGO */
+.gallery-header {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 25px;
+}
+.logo {
+    width: 60px;
+    height: 60px;
+    object-fit: contain;
+}
+.gallery-header h1 {
+    font-size: 24px;
+    font-weight: 700;
+    color: #ff6ec4;
+    text-shadow: 0 0 15px rgba(255,110,196,0.8);
 }
 
-@keyframes spin-slow {
-    0% {
-        transform: rotate(0deg);
-    }
-    100% {
-        transform: rotate(360deg);
-    }
+/* GALERİ GRID */
+.gallery-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 25px;
+    padding: 10px;
 }
 
-.animate-spin-slow {
-    animation: spin-slow 8s linear infinite;
+/* GALERİ KARTLARI */
+.gallery-item {
+    position: relative;
+    width: 100%;
+    padding-top: 100%;
+    border-radius: 20px;
+    background-size: cover;
+    background-position: center;
+    cursor: pointer;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+    overflow: hidden;
+    transition: transform 0.4s ease, box-shadow 0.4s ease, border-radius 0.4s ease;
+}
+.gallery-item:hover {
+    transform: scale(1.05);
+    border-radius: 25px;
+    box-shadow: 0 20px 40px rgba(255, 105, 180, 0.5),
+    0 0 25px rgba(120, 115, 245, 0.5);
+}
+.gallery-item.hovered {
+    transform: scale(1.1) rotate(-5deg);
+    border-radius: 50%;
+    box-shadow: 0 20px 40px rgba(255, 105, 180, 0.6),
+    0 0 30px rgba(120, 115, 245, 0.5);
+    border-image: conic-gradient(from 0deg, #ff6ec4, #ffafbd, #7873f5, #ff6ec4) 1;
+    animation: rotate-border 3s linear infinite;
+}
+@keyframes rotate-border {
+    from { border-image: conic-gradient(from 0deg, #ff6ec4, #ffafbd, #7873f5, #ff6ec4) 1; }
+    to   { border-image: conic-gradient(from 360deg, #ff6ec4, #ffafbd, #7873f5, #ff6ec4) 1; }
+}
+.gallery-item::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: linear-gradient(to top, rgba(0,0,0,0.6), transparent 60%);
+    transition: opacity 0.3s ease;
+    opacity: 0.5;
+}
+.gallery-item:hover::after { opacity: 0.8; }
+
+/* Overlay: açıklama ve tarih */
+.info-overlay {
+    position: absolute;
+    bottom: 10px;
+    left: 10px;
+    background: rgba(0,0,0,0.6);
+    color: #fff;
+    padding: 8px 12px;
+    border-radius: 12px;
+    font-size: 14px;
+    text-align: left;
+}
+.info-overlay .title {
+    font-weight: 600;
+    margin-bottom: 4px;
+}
+.info-overlay .date {
+    font-weight: 400;
+    font-size: 12px;
+    color: #ffafbd;
 }
 
-@keyframes spin {
-    from {
-        transform: rotate(0deg);
-    }
-    to {
-        transform: rotate(360deg);
-    }
+/* LIGHTBOX */
+.lightbox {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle at center, rgba(255,110,196,0.25), rgba(10,0,30,0.95));
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 999;
+    flex-direction: column;
+    overflow: hidden;
 }
 
-.spin-animation {
-    animation: spin 4s linear infinite;
+/* RANDOM SHAPES */
+.shapes {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    overflow: hidden;
+    z-index: 0;
+    pointer-events: none;
+}
+.shape {
+    position: absolute;
+    display: block;
+    width: 8px;
+    height: 8px;
+    background: #ff6ec4;
+    border-radius: 50%;
+    opacity: 0.6;
+    animation: floatShape linear infinite;
+}
+.shape:nth-child(3n) { background: #ffafbd; width: 12px; height: 12px; border-radius: 50%; }
+.shape:nth-child(4n) { background: #7873f5; width: 10px; height: 10px; border-radius: 0; }
+.shape:nth-child(5n) {
+    background: #ffffff; width: 14px; height: 14px;
+    clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+}
+.shape:nth-child(n) {
+    top: calc(var(--randY, 50) * 1%);
+    left: calc(var(--randX, 50) * 1%);
+}
+@keyframes floatShape {
+    0% { transform: translateY(0) scale(0.8); opacity: 0.7; }
+    50% { opacity: 1; }
+    100% { transform: translateY(-200vh) scale(1.2); opacity: 0; }
 }
 
-.group:hover .group-hover\:opacity-100 {
-    opacity: 1;
+.lightbox-img {
+    max-width: 90%;
+    max-height: 80%;
+    border-radius: 20px;
+    box-shadow: 0 0 30px rgba(255,110,196,0.7);
+    z-index: 1;
+}
+.animate-in {
+    animation: zoomIn 0.6s ease forwards;
+}
+@keyframes zoomIn {
+    from { transform: scale(0.7) rotate(-3deg); opacity: 0; }
+    to   { transform: scale(1) rotate(0deg); opacity: 1; }
+}
+.lightbox-controls {
+    display: flex;
+    justify-content: space-between;
+    width: 120px;
+    margin-top: 20px;
+    z-index: 1;
+}
+.lightbox-controls button {
+    font-size: 30px;
+    background: none;
+    border: none;
+    color: #ffafbd;
+    cursor: pointer;
+    transition: transform 0.2s ease, color 0.3s ease;
+}
+.lightbox-controls button:hover {
+    transform: scale(1.2);
+    color: #fff;
+}
+.close-btn {
+    position: absolute;
+    top: 30px;
+    right: 50px;
+    font-size: 50px;
+    color: #ff6ec4;
+    cursor: pointer;
+    text-shadow: 0 0 15px rgba(255,110,196,0.9);
+    z-index: 2;
 }
 </style>
