@@ -14,6 +14,7 @@
                     class="image"
                     :style="{ backgroundImage: `url('/storage/${item.image}')` }"
                 >
+
                     <!-- Info Overlay -->
                     <div class="info-overlay">
                         <div class="title">{{ item.description }}</div>
@@ -26,11 +27,17 @@
                             ❤️ {{ item.liked }}
                         </button>
 
+                        <!-- Yukarı uçan kalpler -->
                         <span
                             v-for="(heart, index) in item.hearts"
                             :key="index"
                             class="flying-heart"
-                            :style="{ left: heart.x + 'px', bottom: heart.y + 'px', animationDuration: heart.duration + 's' }"
+                            :style="{
+                left: heart.x + 'px',
+                bottom: heart.y + 'px',
+                animationDuration: heart.duration + 's',
+                '--scale': heart.scale
+              }"
                         >❤️</span>
                     </div>
 
@@ -121,15 +128,23 @@ function formatDate(date) {
     return new Date(date).toLocaleDateString('tr-TR', { year:'numeric', month:'long', day:'numeric' });
 }
 
+// ✅ Yeni beğenme fonksiyonu: tıklayınca yukarı uçan kalpler
 function likeItem(item, event) {
-    fetch(`/songs/liked/${item.id}`, { method: 'get' })
-        .then(() => {
-            item.liked++;
-            const heart = { x: event.offsetX, y: 0, duration: 1 + Math.random() * 1.5 };
-            item.hearts.push(heart);
-            setTimeout(() => item.hearts.shift(), heart.duration * 1000);
-        })
-        .catch(err => console.error(err));
+    item.liked++;
+
+    const rect = event.currentTarget.getBoundingClientRect();
+    const heart = {
+        x: rect.width/2 - 10,  // buton ortasından başlat
+        y: 0,                   // buton üstünden yukarı
+        duration: 1 + Math.random() * 0.5,
+        scale: 1 + Math.random() * 0.5
+    };
+
+    item.hearts.push(heart);
+
+    setTimeout(() => {
+        item.hearts.shift();
+    }, heart.duration * 1000);
 }
 </script>
 
@@ -143,10 +158,9 @@ function likeItem(item, event) {
 .gallery-header h1 { font-size:24px; font-weight:700; color:#ff6ec4; text-shadow:0 0 12px rgba(255,110,196,0.8); }
 
 /* Grid */
-.gallery-container { display:grid; grid-template-columns:repeat(2,1fr); gap:25px; list-style:none; margin:0; padding:0; }
+.gallery-container { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:25px; list-style:none; margin:0; padding:0; }
 .gallery-item { position:relative; width:100%; padding-top:100%; border-radius:15px; overflow:hidden; cursor:pointer; }
 .image { position:absolute; inset:0; background-size:cover; background-position:center; border-radius:15px; border:2px solid transparent; box-shadow:0 5px 15px rgba(0,0,0,0.4); transition: transform 0.3s, border-color 0.3s; }
-.image:hover { transform:scale(1.05); border-color:#ff6ec4; }
 
 /* Info overlay */
 .info-overlay { position:absolute; bottom:10px; left:10px; background:rgba(0,0,0,0.65); color:#fff; padding:6px 10px; border-radius:12px; font-size:12px; }
@@ -156,18 +170,42 @@ function likeItem(item, event) {
 /* Like */
 .like-wrapper { position:absolute; top:8px; right:8px; z-index:2; }
 .like-btn { background:rgba(255,105,180,0.9); color:#fff; border:none; padding:6px 12px; border-radius:14px; cursor:pointer; font-size:16px; transition: transform 0.2s ease; }
-.like-btn:hover { transform:scale(1.4); }
+.like-btn:hover { transform:scale(1.2); }
 
-.flying-heart { position:absolute; animation-name:flyUp; animation-timing-function:ease-out; animation-fill-mode:forwards; font-size:20px; }
-@keyframes flyUp { 0% { transform: translateY(0) scale(1); opacity:1; } 50% { transform: translateY(-50px) scale(1.6); opacity:0.8; } 100% { transform: translateY(-120px) scale(0.8); opacity:0; } }
+/* Yeni beğenme animasyonu: yukarı uçan kalp */
+.flying-heart {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    font-size: 20px;
+    pointer-events: none;
+    animation-name: floatUp;
+    animation-timing-function: ease-out;
+    animation-fill-mode: forwards;
+}
 
+@keyframes floatUp {
+    0% {
+        transform: translateY(0) scale(var(--scale,1));
+        opacity: 1;
+    }
+    50% {
+        transform: translateY(-30px) scale(calc(var(--scale,1)*1.3));
+        opacity: 0.8;
+    }
+    100% {
+        transform: translateY(-80px) scale(calc(var(--scale,1)*0.8));
+        opacity: 0;
+    }
+}
+
+/* Full Click */
 .full-click-area { position:absolute; inset:0; z-index:1; }
 
 /* Lightbox */
 .lightbox { position:fixed; inset:0; display:flex; justify-content:center; align-items:center; z-index:999; overflow:hidden; background:rgba(0,0,0,0.95); }
 .lightbox-inner { display:flex; justify-content:center; align-items:center; animation:popIn 0.6s ease forwards; }
 @keyframes popIn { 0% { transform: scale(0) rotate(0deg); opacity:0; } 50% { transform: scale(1.2) rotate(180deg); opacity:1; } 100% { transform: scale(1) rotate(360deg); opacity:1; } }
-
 .lightbox-img { max-width:80%; max-height:80%; border-radius:25%; box-shadow:0 0 30px #ff6ec4; transition: transform 0.4s ease; }
 
 /* Close Button */
