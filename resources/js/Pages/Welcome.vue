@@ -24,7 +24,8 @@
                     <!-- Like / Beğen -->
                     <div class="like-wrapper">
                         <button class="like-btn" @click.stop="likeItem(item, $event)">
-                            ❤️ {{ item.liked }}
+                            <span class="heart-count">{{ item.liked }}</span>
+                            ❤️
                         </button>
 
                         <!-- Yukarı uçan kalpler -->
@@ -33,11 +34,11 @@
                             :key="index"
                             class="flying-heart"
                             :style="{
-                left: heart.x + 'px',
-                bottom: heart.y + 'px',
-                animationDuration: heart.duration + 's',
-                '--scale': heart.scale
-              }"
+            left: heart.x + 'px',
+            bottom: heart.y + 'px',
+            animationDuration: heart.duration + 's',
+            '--scale': heart.scale
+        }"
                         >❤️</span>
                     </div>
 
@@ -183,10 +184,59 @@ function likeItem(item, event) {
 .info-overlay .date { font-weight:400; font-size:10px; color:#ffafbd; }
 
 /* Like */
-.like-wrapper { position:absolute; top:8px; right:8px; z-index:2; }
-.like-btn { background:rgba(255,105,180,0.9); color:#fff; border:none; padding:6px 12px; border-radius:14px; cursor:pointer; font-size:16px; transition: transform 0.2s ease; }
-.like-btn:hover { transform:scale(1.2); }
+/* Like */
+.like-wrapper {
+    position: absolute;
+    bottom: 8px;
+    right: 8px;
+    z-index: 2;
+}
+.like-btn {
+    position: relative;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 26px; /* kalbi biraz büyüttük */
+    color: red;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+}
 
+/* Liked sayısı kalbin üstüne yazılacak */
+.heart-count {
+    position: absolute;
+    top: -10px; /* kalbin üstüne çıkması için */
+    right: -4px; /* sağa hizalama */
+    font-size: 14px;
+    font-weight: bold;
+    color: white;
+    text-shadow: 0 0 3px black;
+}
+
+/* Yukarı uçan kalpler */
+.flying-heart {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    font-size: 20px;
+    pointer-events: none;
+    animation-name: floatUp;
+    animation-timing-function: ease-out;
+    animation-fill-mode: forwards;
+}
+@keyframes floatUp {
+    0% { transform: translateY(0) scale(var(--scale,1)); opacity: 1; }
+    50% { transform: translateY(-30px) scale(calc(var(--scale,1)*1.3)); opacity: 0.8; }
+    100% { transform: translateY(-80px) scale(calc(var(--scale,1)*0.8)); opacity: 0; }
+}
+@media (hover: hover) and (pointer: fine) {
+    .image:hover {
+        transform: scale(1.05);
+        border-color: #ff6ec4;
+    }
+}
 /* Yeni beğenme animasyonu: yukarı uçan kalp */
 .flying-heart {
     position: absolute;
