@@ -102,6 +102,7 @@
 <script setup>
 import { ref, computed } from "vue";
 import { Link } from "@inertiajs/vue3";
+import axios from 'axios';
 
 const props = defineProps(['imagess']);
 
@@ -135,6 +136,7 @@ function formatDate(date) {
 
 // Beğenme fonksiyonu: string olsa da parse ediyor, kalpler uçuyor
 function likeItem(item, event) {
+    // Önce frontend sayısını artır
     item.liked = parseInt(item.liked) + 1;
 
     const rect = event.currentTarget.getBoundingClientRect();
@@ -144,13 +146,21 @@ function likeItem(item, event) {
         duration: 1 + Math.random() * 0.5,
         scale: 1 + Math.random() * 0.5
     };
-
     item.hearts.push(heart);
+    setTimeout(() => { item.hearts.shift(); }, heart.duration * 1000);
 
-    setTimeout(() => {
-        item.hearts.shift();
-    }, heart.duration * 1000);
+    // Backend'e GET isteği gönder
+    axios.get(`/songs/liked/${item.id}`)
+        .then(res => {
+            console.log('Backend OK:', res.data);
+        })
+        .catch(err => {
+            console.error('Beğeni gönderilemedi:', err);
+            // Hata olursa frontend sayısını geri azalt
+            item.liked = parseInt(item.liked) - 1;
+        });
 }
+
 </script>
 
 <style scoped>
