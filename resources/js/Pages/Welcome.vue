@@ -107,10 +107,15 @@ const props = defineProps(['imagess']);
 
 const lightboxOpen = ref(false);
 const currentItem = ref(null);
-
-const images = ref(props.imagess.map(img => ({ ...img, hearts: [] })));
 const isPlaying = ref(false);
 const audio = ref(new Audio('/Zuhal.mp3'));
+
+// String veya integer farketmez: liked'i integer olarak ayarlıyoruz
+const images = ref(props.imagess.map(img => ({
+    ...img,
+    hearts: [],
+    liked: parseInt(img.liked) || 0
+})));
 
 function togglePlay() {
     if (isPlaying.value) audio.value.pause();
@@ -128,14 +133,14 @@ function formatDate(date) {
     return new Date(date).toLocaleDateString('tr-TR', { year:'numeric', month:'long', day:'numeric' });
 }
 
-// ✅ Yeni beğenme fonksiyonu: tıklayınca yukarı uçan kalpler
+// Beğenme fonksiyonu: string olsa da parse ediyor, kalpler uçuyor
 function likeItem(item, event) {
-    item.liked++;
+    item.liked = parseInt(item.liked) + 1;
 
     const rect = event.currentTarget.getBoundingClientRect();
     const heart = {
-        x: rect.width/2 - 10,  // buton ortasından başlat
-        y: 0,                   // buton üstünden yukarı
+        x: rect.width/2 - 10,
+        y: 0,
         duration: 1 + Math.random() * 0.5,
         scale: 1 + Math.random() * 0.5
     };
@@ -183,20 +188,10 @@ function likeItem(item, event) {
     animation-timing-function: ease-out;
     animation-fill-mode: forwards;
 }
-
 @keyframes floatUp {
-    0% {
-        transform: translateY(0) scale(var(--scale,1));
-        opacity: 1;
-    }
-    50% {
-        transform: translateY(-30px) scale(calc(var(--scale,1)*1.3));
-        opacity: 0.8;
-    }
-    100% {
-        transform: translateY(-80px) scale(calc(var(--scale,1)*0.8));
-        opacity: 0;
-    }
+    0% { transform: translateY(0) scale(var(--scale,1)); opacity: 1; }
+    50% { transform: translateY(-30px) scale(calc(var(--scale,1)*1.3)); opacity: 0.8; }
+    100% { transform: translateY(-80px) scale(calc(var(--scale,1)*0.8)); opacity: 0; }
 }
 
 /* Full Click */
