@@ -45,7 +45,7 @@ Route::post('/create-photo', function (Request $request) {
 
 Route::get('/favorites', function () {
     return Inertia::render('Favorites', [
-        'products' => \App\Models\Product::where('is_favorite', true)->get()
+        'products' => \App\Models\Product::where('like', true)->get()
     ]);
 })->name('favorites');
 
@@ -87,12 +87,12 @@ Route::post('songs/set-day/{id}', function ($id) {
     return response()->json(['message' => 'Günün Şarkısı Değiştirildi']);
 });
 
-Route::post('songs/favorite/{id}', function ($id) {
+Route::get('songs/liked/{id}', function ($id) {
     $product = Product::find($id);
 
-    $product->is_favorite = !$product->is_favorite;
+    $product->liked++;
     $product->update();
-    return response()->json(['message' => 'Günün Şarkısı Değiştirildi']);
+    return 'OK';
 });
 
 Route::post('songs/remove/{id}', function ($id) {
