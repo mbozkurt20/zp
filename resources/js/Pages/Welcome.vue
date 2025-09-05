@@ -75,12 +75,17 @@
                 <span>Galeri</span>
             </Link>
 
-            <button @click="togglePlay" class="bg-pink-600 hover:bg-pink-500 text-white rounded-full w-16 h-16 flex justify-center items-center text-2xl shadow-lg">
-                {{ isPlaying ? '⏸' : '▶' }}
-            </button>
+            <button @click="togglePlay" class="bg-pink-600 hover:bg-pink-500 text-white rounded-full w-16 h-16 flex justify-center items-center shadow-lg">
+                <svg v-if="!isPlaying" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-8 h-8">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-6.518-3.759A1 1 0 007 8.22v7.56a1 1 0 001.234.97l6.518-1.873a1 1 0 000-1.82z" />
+                </svg>
 
+                <svg v-else xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-8 h-8">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 9v6m4-6v6" />
+                </svg>
+            </button>
             <Link :href="route('add')" class="flex flex-col items-center text-sm" :class="$page.url === '/add' ? 'text-pink-600 font-bold' : 'text-gray-600'">
-                <span>Şarkı Çal</span>
+                <span>Yeni Anı Ekle</span>
             </Link>
         </div>
 
