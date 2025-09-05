@@ -79,22 +79,12 @@
 import { ref, onMounted, computed } from "vue";
 import axios from "axios";
 import {Link} from "@inertiajs/vue3";
-
+const props = defineProps(['imagess'])
 const hoverIndex = ref(null);
 const lightboxOpen = ref(false);
 const currentIndex = ref(0);
-const images = ref([]);
+const images = ref(props.imagess);
 
-// Backend'den ürünleri çek
-const fetchProducts = async () => {
-    const response = await axios.get('/products');
-    images.value = response.data.data;
-    console.log({ images: images.value });
-};
-
-onMounted(() => {
-    fetchProducts();
-});
 
 // Lightbox fonksiyonları
 function openLightbox(index) {

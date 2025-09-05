@@ -17,6 +17,7 @@ Route::get('/', function () {
        'imagess' => \App\Models\Product::all()
     ]);
 })->name('welcome');
+
 Route::post('/create-photo', function (Request $request) {
     $request->validate([
         'description' => 'nullable|string',
@@ -27,8 +28,6 @@ Route::post('/create-photo', function (Request $request) {
     $imagePath = $request->file('file')
         ? $request->file('file')->store('images', 'public')
         : null;
-
-
 
     // Yeni kayıt
     $song = Product::create([
@@ -102,10 +101,6 @@ Route::post('songs/remove/{id}', function ($id) {
 
     return response()->json(['message' => 'Günün Şarkısı Silindi']);
 });
-
-
-
-
 
 Route::post('/songs/update-image/{id}', function (Request $request,$id) {
     $song = Product::findOrFail($id);
