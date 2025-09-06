@@ -1,5 +1,5 @@
 <template>
-    <div v-if="enterPassword === password">
+    <div >
         <div class="gallery-wrapper">
             <!-- Başlık & Logo -->
             <div class="gallery-header">
@@ -93,97 +93,17 @@
             </Link>
         </div>
     </div>
-
-    <div
-        class="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 dark:text-white/50 relative"
-        v-else
-        style="background-image: url('/images/pasa.jpeg'); background-size: cover; background-position: center; background-repeat: no-repeat"
-    >
-        <!-- OTP input alanları -->
-        <div class="w-full max-w-md px-4">
-            <div class="flex justify-center gap-3 mt-20">
-                <input
-                    v-for="(digit, index) in otp"
-                    :key="index"
-                    v-model="otp[index]"
-                    type="text"
-                    inputmode="numeric"
-                    maxlength="1"
-                    class="w-14 h-14 text-center text-gray-900 text-2xl border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-pink-500 dark:bg-gray-800 dark:text-white bg-white/80 backdrop-blur-sm"
-                    @input="onInput($event, index)"
-                    @keydown="onKeyDown($event, index)"
-                    ref="inputRefs"
-                />
-            </div>
-        </div>
-    </div>
 </template>
 
 <script setup>
-import {ref,reactive,computed} from "vue";
+import {ref} from "vue";
 import axios from "axios";
 import {Link} from "@inertiajs/vue3";
-import {toast} from "vue3-toastify";
+import { toast } from "vue3-toastify";
 
 const form = ref({description: "", image: null});
 const previewUrl = ref(null);
 const isLoading = ref(false);
-const otpLength = 4
-const otp = reactive(Array(otpLength).fill(''))
-const inputRefs = ref([])
-const password = '2105';
-const enterPassword = ref('');
-
-const onInput = (e, index) => {
-    const value = e.target.value
-
-    // Sadece rakam girilmesine izin ver
-    if (!/^\d$/.test(value)) {
-        otp[index] = ''
-        return
-    }
-
-    otp[index] = value
-
-    // Son kutuda değilsek, bir sonrakine geç
-    if (index < otpLength - 1) {
-        inputRefs.value[index + 1]?.focus()
-    } else {
-        // Son kutuya girildiyse submit fonksiyonu tetikle
-        submitOtp()
-    }
-}
-
-const onKeyDown = (e, index) => {
-    if (e.key === 'Backspace') {
-        if (otp[index] === '') {
-            if (index > 0) {
-                otp[index - 1] = ''
-                inputRefs.value[index - 1]?.focus()
-            }
-        }
-    }
-}
-
-const submitOtp = () => {
-    const code = otp.join('')
-
-    if (code !== password) {
-        return toast("Yanlış Tuşlamalar!!!", {
-            "theme": "auto",
-            "type": "default",
-            "dangerouslyHTMLString": true
-        })
-    }
-
-    enterPassword.value = code;
-
-    return toast("Sahip Geldi...", {
-        "theme": "auto",
-        "type": "success",
-        "dangerouslyHTMLString": true
-    })
-}
 
 const handleImageUpload = (e) => {
     const file = e.target.files[0];
@@ -208,19 +128,23 @@ const submitForm = async () => {
         await axios.post("/create-photo", fd, {
             headers: {"Content-Type": "multipart/form-data"},
         });
-        return toast("Görsel Yüklendi...", {
-            "theme": "auto",
-            "type": "success",
-            "dangerouslyHTMLString": true
+
+        toast("Görsel Yüklendi...", {
+            theme: "auto",
+            type: "success",
+            dangerouslyHTMLString: true
         });
-        form.value = {description: "", image: null};
+
+        // ✅ Formu temizle
+        form.value = { description: "", image: null };
         previewUrl.value = null;
+
     } catch (e) {
-        console.log({err: e})
+        console.log({ err: e });
     } finally {
         isLoading.value = false;
     }
-};
+}
 </script>
 
 <style scoped>

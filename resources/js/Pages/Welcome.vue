@@ -3,47 +3,31 @@
 
         <!-- Başlık -->
         <header class="gallery-header">
-            <img src="/public/images/zp.png" alt="Z&P Logo" class="logo" />
+            <img src="/public/images/zp.png" alt="Logo" class="logo"/>
             <h1>Dünyasına Hoşgeldiniz!</h1>
         </header>
 
         <!-- Galeri -->
         <ul class="gallery-container">
             <li v-for="item in sortedImages" :key="item.id" class="gallery-item">
-                <div
-                    class="image"
-                    :style="{ backgroundImage: `url('/storage/${item.image}')` }"
-                >
+                <div class="image-wrapper" @dblclick="likeItem(item)">
+                    <img :src="getImageUrl(item.image)" alt="Post Image" class="image" @click="openLightbox(item)"/>
+                    <transition-group name="heart" tag="div">
+                        <span v-for="(h, idx) in item.hearts" :key="h.id" class="floating-heart">❤️</span>
+                    </transition-group>
+                </div>
 
-                    <!-- Info Overlay -->
-                    <div class="info-overlay">
-                        <div class="title">{{ item.description }}</div>
-                        <div class="date">{{ formatDate(item.created_at) }}</div>
-                    </div>
-
-                    <!-- Like / Beğen -->
-                    <div class="like-wrapper">
-                        <button class="like-btn" @click.stop="likeItem(item, $event)">
-                            <span class="heart-count">{{ item.liked }}</span>
-                            ❤️
+                <div class="post-footer">
+                    <p class="desc-text font-bold">
+                        {{ truncatedText(item) }}
+                        <button v-if="item.description.length > 100" @click.stop="toggleExpand(item)" class="more-btn">
+                            {{ item.expanded ? 'Daha Az' : 'Daha Fazla' }}
                         </button>
-
-                        <!-- Yukarı uçan kalpler -->
-                        <span
-                            v-for="(heart, index) in item.hearts"
-                            :key="index"
-                            class="flying-heart"
-                            :style="{
-            left: heart.x + 'px',
-            bottom: heart.y + 'px',
-            animationDuration: heart.duration + 's',
-            '--scale': heart.scale
-        }"
-                        >❤️</span>
+                    </p>
+                    <div class="meta font-bold">
+                        <span class="likes" @click.stop="likeItem(item)">{{ item.liked }} ❤️</span>
+                        <span class="date">{{ formatDate(item.created_at) }}</span>
                     </div>
-
-                    <!-- Lightbox -->
-                    <div class="full-click-area" @click="openLightbox(item)"></div>
                 </div>
             </li>
         </ul>
@@ -51,48 +35,39 @@
         <!-- Lightbox -->
         <div v-if="lightboxOpen" class="lightbox" @click.self="closeLightbox">
             <span class="close-btn" @click="closeLightbox">&times;</span>
-
-            <!-- Arka Plan Hologram Efekti -->
             <div class="holo-bg">
-        <span
-            v-for="n in 50"
-            :key="n"
-            class="holo-shape"
-            :class="['shape-'+(n%4)]"
-            :style="{
-            top: Math.random()*100+'%',
-            left: Math.random()*100+'%',
-            animationDelay: Math.random()*5+'s',
-            animationDuration: (5+Math.random()*10)+'s'
-          }"
-        ></span>
+        <span v-for="n in 50" :key="n" class="holo-shape"
+              :style="{
+                top: Math.random()*100+'%',
+                left: Math.random()*100+'%',
+                animationDelay: Math.random()*5+'s',
+                animationDuration: (5+Math.random()*10)+'s'
+              }"></span>
             </div>
-
-            <!-- Açılan Resim Animasyonlu -->
             <div class="lightbox-inner">
-                <img
-                    :src="`/storage/${currentItem.image}`"
-                    class="lightbox-img animate-in"
-                />
+                <img :src="getImageUrl(currentItem.image)" class="lightbox-img animate-in"/>
             </div>
         </div>
 
         <!-- Alt Navigasyon -->
-        <div class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-300 dark:bg-gray-900 dark:border-gray-700 flex justify-between items-center py-2 px-8 z-50">
-            <Link :href="route('welcome')" class="flex flex-col items-center text-sm" :class="$page.url === '/' ? 'text-pink-600 font-bold' : 'text-gray-600'">
+        <div class="fixed bottom-0 left-0 right-0 flex justify-around py-3 z-50 nav-bg">
+            <Link :href="route('welcome')" class="flex flex-col items-center text-sm"
+                  :class="$page.url === '/' ? 'text-white font-bold' : 'text-gray-200'">
                 <span>Galeri</span>
             </Link>
 
-            <button @click="togglePlay" class="bg-pink-600 hover:bg-pink-500 text-white rounded-full w-16 h-16 flex justify-center items-center shadow-lg">
-                <svg v-if="!isPlaying" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-8 h-8">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-6.518-3.759A1 1 0 007 8.22v7.56a1 1 0 001.234.97l6.518-1.873a1 1 0 000-1.82z" />
+            <button @click="togglePlay" class="nav-center-btn">
+                <svg v-if="!isPlaying" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M14.752 11.168l-6.518-3.759A1 1 0 007 8.22v7.56a1 1 0 001.234.97l6.518-1.873a1 1 0 000-1.82z"/>
                 </svg>
-
-                <svg v-else xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-8 h-8">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 9v6m4-6v6" />
+                <svg v-else xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 9v6m4-6v6"/>
                 </svg>
             </button>
-            <Link :href="route('add')" class="flex flex-col items-center text-sm" :class="$page.url === '/add' ? 'text-pink-600 font-bold' : 'text-gray-600'">
+
+            <Link :href="route('add')" class="flex flex-col items-center text-sm"
+                  :class="$page.url === '/add' ? 'text-white font-bold' : 'text-gray-200'">
                 <span>Yeni Anı Ekle</span>
             </Link>
         </div>
@@ -103,175 +78,116 @@
 <script setup>
 import { ref, computed } from "vue";
 import { Link } from "@inertiajs/vue3";
-import axios from 'axios';
+import axios from "axios";
 
-const props = defineProps(['imagess']);
+const props = defineProps(["imagess"]);
 
 const lightboxOpen = ref(false);
 const currentItem = ref(null);
+
 const isPlaying = ref(false);
 const audio = ref(new Audio('/Zuhal.mp3'));
-
-// String veya integer farketmez: liked'i integer olarak ayarlıyoruz
-const images = ref(props.imagess.map(img => ({
-    ...img,
-    hearts: [],
-    liked: parseInt(img.liked) || 0
-})));
-
 function togglePlay() {
     if (isPlaying.value) audio.value.pause();
     else audio.value.play();
     isPlaying.value = !isPlaying.value;
 }
 
-const sortedImages = computed(() =>
-    [...images.value].sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+const images = ref(
+    props.imagess.map(img => ({
+        ...img,
+        liked: parseInt(img.liked) || 0,
+        expanded: false,
+        hearts: []
+    }))
 );
+
+const sortedImages = computed(() =>
+    [...images.value].sort((a,b) => new Date(b.created_at) - new Date(a.created_at))
+);
+
+function truncatedText(item) {
+    if(item.expanded || item.description.length <= 100) return item.description;
+    return item.description.substring(0,100) + '...';
+}
+function toggleExpand(item) { item.expanded = !item.expanded; }
 
 function openLightbox(item) { currentItem.value = item; lightboxOpen.value = true; }
 function closeLightbox() { lightboxOpen.value = false; }
-function formatDate(date) {
-    return new Date(date).toLocaleDateString('tr-TR', { year:'numeric', month:'long', day:'numeric' });
-}
 
-// Beğenme fonksiyonu: string olsa da parse ediyor, kalpler uçuyor
-function likeItem(item, event) {
-    // Önce frontend sayısını artır
+function likeItem(item) {
+    const id = Date.now();
+    item.hearts.push({ id });
+    setTimeout(() => { item.hearts = item.hearts.filter(h => h.id !== id); }, 1200);
+
     item.liked = parseInt(item.liked) + 1;
-
-    const rect = event.currentTarget.getBoundingClientRect();
-    const heart = {
-        x: rect.width/2 - 10,
-        y: 0,
-        duration: 1 + Math.random() * 0.5,
-        scale: 1 + Math.random() * 0.5
-    };
-    item.hearts.push(heart);
-    setTimeout(() => { item.hearts.shift(); }, heart.duration * 1000);
-
-    // Backend'e GET isteği gönder
     axios.get(`/songs/liked/${item.id}`)
-        .then(res => {
-            console.log('Backend OK:', res.data);
-        })
-        .catch(err => {
-            console.error('Beğeni gönderilemedi:', err);
-            // Hata olursa frontend sayısını geri azalt
-            item.liked = parseInt(item.liked) - 1;
-        });
+        .then(res => console.log("Backend OK:", res.data))
+        .catch(err => { console.error("Beğeni gönderilemedi:", err); item.liked -= 1; });
 }
 
+function formatDate(date) { return new Date(date).toLocaleDateString("tr-TR", { year:"numeric", month:"long", day:"numeric" }); }
+
+function getImageUrl(image) { if(!image) return '/public/images/placeholder.png'; return `/storage/${image}`; }
 </script>
 
 <style scoped>
-/* Wrapper */
-.gallery-wrapper { min-height:100vh; padding:25px; font-family:'Segoe UI',sans-serif; background:linear-gradient(135deg,#1a001f,#2a002a,#1a001f); }
+@import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600;700&display=swap');
 
-/* Başlık */
+.gallery-wrapper {
+    min-height:100vh;
+    padding:25px;
+    font-family: 'Quicksand', sans-serif;
+    background: linear-gradient(135deg,#d084e2,#f78acb,#a261d9);
+}
+
+/* Header */
 .gallery-header { display:flex; align-items:center; gap:15px; margin-bottom:25px; }
-.logo { width:50px; height:50px; object-fit:contain; }
-.gallery-header h1 { font-size:24px; font-weight:700; color:#ff6ec4; text-shadow:0 0 12px rgba(255,110,196,0.8); }
+.logo{width:50px;height:50px;object-fit:contain;}
+.gallery-header h1{
+    font-size:26px;
+    font-weight:700;
+    color:#fff;
+    text-shadow:0 0 15px rgba(255,255,255,0.4);
+}
 
 /* Grid */
-.gallery-container { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:25px; list-style:none; margin:0; padding:0; }
-.gallery-item { position:relative; width:100%; padding-top:100%; border-radius:15px; overflow:hidden; cursor:pointer; }
-.image { position:absolute; inset:0; background-size:cover; background-position:center; border-radius:15px; border:2px solid transparent; box-shadow:0 5px 15px rgba(0,0,0,0.4); transition: transform 0.3s, border-color 0.3s; }
+.gallery-container { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:18px; list-style:none; margin:0; padding:0; }
+.gallery-item { display:flex; flex-direction:column; border-radius:16px; overflow:hidden; cursor:pointer; background:rgba(255,255,255,0.05); backdrop-filter:blur(6px); transition:0.3s; }
+.gallery-item:hover { transform:scale(1.03); }
 
-/* Info overlay */
-.info-overlay { position:absolute; bottom:10px; left:10px; background:rgba(0,0,0,0.65); color:#fff; padding:6px 10px; border-radius:12px; font-size:12px; }
-.info-overlay .title { font-weight:600; margin-bottom:2px; }
-.info-overlay .date { font-weight:400; font-size:10px; color:#ffafbd; }
+/* Resim */
+.image-wrapper { position:relative; overflow:hidden; border-radius:16px 16px 0 0; }
+.image { width:100%; display:block; object-fit:cover; transition: all 0.5s ease; border-radius:16px 16px 0 0; }
+.image-wrapper:hover .image { transform:scale(1.07); filter:brightness(1.1); }
 
-/* Like */
-/* Like */
-.like-wrapper {
-    position: absolute;
-    bottom: 8px;
-    right: 8px;
-    z-index: 2;
-}
-.like-btn {
-    position: relative;
-    background: none;
-    border: none;
-    cursor: pointer;
-    font-size: 26px; /* kalbi biraz büyüttük */
-    color: red;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0;
-}
+/* Heart anim */
+.floating-heart { position:absolute; left:50%; top:50%; transform:translate(-50%,-50%) scale(1); font-size:28px; text-shadow:0 0 12px #ff9ce3,0 0 18px #d761f7; animation:heart-float 1.2s ease-out forwards; pointer-events:none; }
+@keyframes heart-float { 0%{transform:translate(-50%,-50%) scale(1);opacity:1;}50%{transform:translate(-50%,-160%) scale(1.4);opacity:1;}100%{transform:translate(-50%,-280%) scale(1.8);opacity:0;} }
 
-/* Liked sayısı kalbin üstüne yazılacak */
-.heart-count {
-    position: absolute;
-    top: -10px; /* kalbin üstüne çıkması için */
-    right: -4px; /* sağa hizalama */
-    font-size: 14px;
-    font-weight: bold;
-    color: white;
-    text-shadow: 0 0 3px black;
-}
-
-/* Yukarı uçan kalpler */
-.flying-heart {
-    position: absolute;
-    left: 0;
-    bottom: 0;
-    font-size: 20px;
-    pointer-events: none;
-    animation-name: floatUp;
-    animation-timing-function: ease-out;
-    animation-fill-mode: forwards;
-}
-@keyframes floatUp {
-    0% { transform: translateY(0) scale(var(--scale,1)); opacity: 1; }
-    50% { transform: translateY(-30px) scale(calc(var(--scale,1)*1.3)); opacity: 0.8; }
-    100% { transform: translateY(-80px) scale(calc(var(--scale,1)*0.8)); opacity: 0; }
-}
-@media (hover: hover) and (pointer: fine) {
-    .image:hover {
-        transform: scale(1.05);
-        border-color: #ff6ec4;
-    }
-}
-/* Yeni beğenme animasyonu: yukarı uçan kalp */
-.flying-heart {
-    position: absolute;
-    left: 0;
-    bottom: 0;
-    font-size: 20px;
-    pointer-events: none;
-    animation-name: floatUp;
-    animation-timing-function: ease-out;
-    animation-fill-mode: forwards;
-}
-@keyframes floatUp {
-    0% { transform: translateY(0) scale(var(--scale,1)); opacity: 1; }
-    50% { transform: translateY(-30px) scale(calc(var(--scale,1)*1.3)); opacity: 0.8; }
-    100% { transform: translateY(-80px) scale(calc(var(--scale,1)*0.8)); opacity: 0; }
-}
-
-/* Full Click */
-.full-click-area { position:absolute; inset:0; z-index:1; }
+/* Footer */
+.post-footer { background: rgba(255,255,255,0.1); backdrop-filter: blur(8px); padding:8px 10px; border-radius:0 0 16px 16px; font-size:13px; color:#fff; }
+.desc-text{margin-bottom:4px; line-height:1.4;}
+.more-btn{background:none; border:none; color:#ffe0f3; cursor:pointer; font-size:12px; font-weight:bold;}
+.meta{display:flex; justify-content:space-between; font-size:12px; color:#eee;}
+.likes{font-weight:bold; cursor:pointer; color:#ff87c9; transition: all 0.3s ease;}
+.likes:hover{transform:scale(1.2);}
 
 /* Lightbox */
-.lightbox { position:fixed; inset:0; display:flex; justify-content:center; align-items:center; z-index:999; overflow:hidden; background:rgba(0,0,0,0.95); }
-.lightbox-inner { display:flex; justify-content:center; align-items:center; animation:popIn 0.6s ease forwards; }
-@keyframes popIn { 0% { transform: scale(0) rotate(0deg); opacity:0; } 50% { transform: scale(1.2) rotate(180deg); opacity:1; } 100% { transform: scale(1) rotate(360deg); opacity:1; } }
-.lightbox-img { max-width:80%; max-height:80%; border-radius:25%; box-shadow:0 0 30px #ff6ec4; transition: transform 0.4s ease; }
+.lightbox { position:fixed; inset:0; display:flex; justify-content:center; align-items:center; z-index:999; overflow:auto; background:rgba(0,0,0,0.92); padding:20px; }
+.lightbox-inner { display:flex; justify-content:center; align-items:center; }
+.lightbox-img { max-width:95vw; max-height:95vh; border-radius:24px; border:3px solid #f78acb; box-shadow:0 0 60px rgba(247,138,203,0.8); transition: transform 0.4s ease; animation:popIn 0.6s ease forwards; }
+@keyframes popIn { 0%{transform:scale(0) rotate(0deg);opacity:0;}50%{transform:scale(1.2) rotate(180deg);opacity:1;}100%{transform:scale(1) rotate(360deg);opacity:1;} }
+.close-btn { position:absolute; top:20px; right:30px; font-size:50px; color:#f78acb; cursor:pointer; z-index:10; }
 
-/* Close Button */
-.close-btn { position:absolute; top:20px; right:30px; font-size:45px; color:#ff6ec4; cursor:pointer; z-index:10; }
-
-/* Hologram Arka Plan */
+/* Holo bg */
 .holo-bg { position:absolute; inset:0; overflow:hidden; z-index:0; }
-.holo-shape { position:absolute; display:block; width:12px; height:12px; border-radius:50%; background:linear-gradient(45deg,#ff6ec4,#7873f5,#ffafbd); opacity:0.5; animation:floatHolo linear infinite; }
-.shape-0 { border-radius:50%; }
-.shape-1 { clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%); } /* star */
-.shape-2 { clip-path: polygon(50% 0%, 0% 100%, 100% 100%); } /* triangle */
-.shape-3 { border-radius:0%; } /* square */
-@keyframes floatHolo { 0% { transform:translateY(0) scale(0.8); opacity:0.5; } 100% { transform:translateY(-200vh) scale(1.2); opacity:0; } }
+.holo-shape { position:absolute; display:block; width:12px; height:12px; border-radius:50%; background: radial-gradient(circle, #ff9ce3, #d761f7, #a261d9); opacity:0.6; animation:floatHolo linear infinite; }
+@keyframes floatHolo { 0%{transform:translateY(0) scale(0.8);opacity:0.6;}100%{transform:translateY(-200vh) scale(1.2);opacity:0;} }
+
+/* Alt navigasyon */
+.nav-bg { background: linear-gradient(90deg,#f78acb,#d761f7); }
+.nav-center-btn { background: #fff; color: #f78acb; border:none; width:56px; height:56px; border-radius:50%; display:flex; justify-content:center; align-items:center; cursor:pointer; box-shadow:0 6px 16px rgba(247,138,203,0.5); transition:0.3s; }
+.nav-center-btn:hover { transform:scale(1.1); }
+.nav-center-btn svg { width:24px; height:24px; }
 </style>
