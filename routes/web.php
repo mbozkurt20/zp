@@ -16,7 +16,7 @@ Route::post('/create-photo', function (Request $request) {
     // ✅ Hem görsel hem video için doğrulama
     $request->validate([
         'description' => 'nullable|string',
-        'file' => 'required|mimes:jpg,jpeg,png,mp4,webm,webp|max:20480', // 20 MB
+        'file' => 'required|mimes:jpg,jpeg,png,mp4,webm,webp', // 20 MB
     ]);
 
     // ✅ Dosya bilgileri
