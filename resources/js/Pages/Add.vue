@@ -147,11 +147,6 @@ const handleFileUpload = (e) => {
         return;
     }
 
-    if (file.size > 20 * 1024 * 1024) {
-        toast("Dosya boyutu 20MB'den büyük olamaz.", { type: "error" });
-        return;
-    }
-
     form.value.file = file;
     isVideo.value = type.startsWith("video/");
     previewUrl.value = URL.createObjectURL(file);

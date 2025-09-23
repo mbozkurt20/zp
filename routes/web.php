@@ -12,6 +12,22 @@ Route::get('/', function () {
     ]);
 })->middleware(['auth', 'verified'])->name('welcome');
 
+Route::post('/songs/update-description/{id}', function (Request $request,$id) {
+    $request->validate([
+        'description' => 'nullable|string|max:1000',
+    ]);
+
+    $song = Product::findOrFail($id);
+    $song->description = $request->description;
+    $song->save();
+
+    return response()->json([
+        'status' => 'success',
+        'message' => 'Açıklama güncellendi',
+        'description' => $song->description,
+    ]);
+})->name('songs.updateDescription');
+
 Route::post('/create-photo', function (Request $request) {
     // ✅ Hem görsel hem video için doğrulama
     $request->validate([

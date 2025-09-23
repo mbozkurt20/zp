@@ -51,6 +51,27 @@
                         </span>
                         <span class="date">{{ formatDate(item.created_at) }}</span>
                     </div>
+
+                    <p v-if="!item.editing" class="desc-text font-bold">
+                        {{ truncatedText(item) }}
+                        <button
+                            v-if="item.description && item.description.length > 100"
+                            @click.stop="toggleExpand(item)"
+                            class="more-btn"
+                        >
+                            {{ item.expanded ? 'Daha Az' : 'Daha Fazla' }}
+                        </button>
+                        <button @click.stop="enableEdit(item)" class="more-btn ml-2">✏️ Düzenle</button>
+                    </p>
+
+                    <!-- Edit Mode -->
+                    <div v-else class="desc-edit">
+                        <textarea v-model="item.description" class="desc-textarea"></textarea>
+                        <div class="flex gap-2 mt-1">
+                            <button @click.stop="saveDescription(item)" class="save-btn">Kaydet</button>
+                            <button @click.stop="cancelEdit(item)" class="cancel-btn">İptal</button>
+                        </div>
+                    </div>
                 </div>
             </li>
         </ul>
@@ -116,6 +137,7 @@
 import { ref, computed } from "vue";
 import { Link } from "@inertiajs/vue3";
 import axios from "axios";
+import {toast} from "vue3-toastify";
 
 const props = defineProps(["imagess"]);
 
@@ -142,6 +164,30 @@ const images = ref(
 const sortedImages = computed(() =>
     [...images.value].sort((a,b) => new Date(b.created_at) - new Date(a.created_at))
 );
+function enableEdit(item) {
+    item.oldDescription = item.description;
+    item.editing = true;
+}
+function cancelEdit(item) {
+    item.description = item.oldDescription;
+    item.editing = false;
+}
+function saveDescription(item) {
+    axios.post(`/songs/update-description/${item.id}`, {
+        description: item.description
+    })
+        .then(res => {
+            console.log("Description updated:", res.data);
+            item.editing = false;
+
+            toast.success('Anı Güncellendi')
+        })
+        .catch(err => {
+            console.error("Güncellenemedi:", err);
+            item.description = item.oldDescription;
+            item.editing = false;
+        });
+}
 
 function truncatedText(item) {
     const text = item.description || '';
@@ -196,6 +242,25 @@ function getVideoUrl(path) {
     color:#fff;
     text-shadow:0 0 15px rgba(255,255,255,0.4);
 }
+.desc-edit { display:flex; flex-direction:column; }
+.desc-textarea {
+    width:100%;
+    min-height:60px;
+    border-radius:8px;
+    border:1px solid #ff87c9;
+    padding:6px 8px;
+    font-size:13px;
+    background:rgba(255,255,255,0.1);
+    color:#fff;
+}
+.save-btn, .cancel-btn {
+    padding:4px 10px;
+    border-radius:6px;
+    font-size:12px;
+    cursor:pointer;
+}
+.save-btn { background:#ff49d1; color:#fff; }
+.cancel-btn { background:#aaa; color:#fff; }
 
 .gallery-container {
     display:grid;
