@@ -1,16 +1,10 @@
 <?php
 
-use App\Http\Controllers\ProfileController;
-use App\Models\Basket;
-use App\Models\Order;
 use App\Models\Product;
-use App\Models\ProductVariant;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
-use Picqer\Barcode\BarcodeGeneratorPNG;
 
 Route::get('/', function () {
     return Inertia::render('Welcome', [
@@ -19,27 +13,35 @@ Route::get('/', function () {
 })->middleware(['auth', 'verified'])->name('welcome');
 
 Route::post('/create-photo', function (Request $request) {
+    // ✅ Hem görsel hem video için doğrulama
     $request->validate([
         'description' => 'nullable|string',
-        'file' => 'nullable|image|max:10240', // 10MB
+        'file' => 'required|mimes:jpg,jpeg,png,mp4,webm,webp|max:20480', // 20 MB
     ]);
 
-    // Görsel yükleme
-    $imagePath = $request->file('file')
-        ? $request->file('file')->store('images', 'public')
-        : null;
+    // ✅ Dosya bilgileri
+    $file = $request->file('file');
+    $mime = $file->getMimeType();
+    $type = str_starts_with($mime, 'video') ? 'video' : 'image';
 
-    // Yeni kayıt
-    $song = Product::create([
-        'slug' =>  Str::slug(Str::random(25)),
-        'description' => $request->description,
-        'image' => $imagePath,
+    // ✅ Kayıt dizini
+    $directory = $type === 'video' ? 'videos' : 'images';
+
+    // ✅ Dosyayı public diskine kaydet
+    $path = $file->store($directory, 'public');
+
+    // ✅ Veritabanı kaydı
+    $item = Product::create([
+        'slug'        => Str::slug(Str::random(25)),
+        'description' => $request->description ?? ' ',
+        'image'       => $path,      // mevcut alan image adıyla kalabilir
+        'type'        => $type,      // ✅ tabloya 'type' (image/video) kolonu ekleyin
     ]);
 
     return response()->json([
         'success' => true,
-        'message' => 'Görsel Başarıyla Eklendi!',
-        'data' => $song,
+        'message' => ucfirst($type) . ' başarıyla yüklendi!',
+        'data'    => $item,
     ]);
 })->middleware(['auth', 'verified']);
 

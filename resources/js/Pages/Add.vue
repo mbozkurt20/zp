@@ -1,5 +1,5 @@
 <template>
-    <div >
+    <div>
         <div class="gallery-wrapper">
             <!-- Başlık & Logo -->
             <div class="gallery-header">
@@ -13,15 +13,26 @@
                     v-for="(item, index) in sortedImages"
                     :key="item.id"
                     class="gallery-item"
-                    :style="{ backgroundImage: `url('/storage/${item.image}')` }"
+                    :style="{ backgroundImage: item.type === 'image' ? `url('/storage/${item.file}')` : 'none' }"
                     @mouseover="hoverIndex = index"
                     @mouseleave="hoverIndex = null"
                     @click="openLightbox(index)"
                     :class="{ hovered: hoverIndex === index }"
                 >
+                    <!-- Eğer video ise küçük video göster -->
+                    <video
+                        v-if="item.type === 'video'"
+                        class="video-thumb"
+                        :src="`/storage/${item.file}`"
+                        muted
+                        loop
+                        playsinline
+                    ></video>
+
                     <div class="info-overlay">
                         <div class="title">{{ item.description }}</div>
-                        <div class="date">{{
+                        <div class="date">
+                            {{
                                 new Date(item.created_at).toLocaleDateString('tr-TR', {
                                     year: 'numeric',
                                     month: 'long',
@@ -33,47 +44,60 @@
                 </div>
             </div>
 
-            <!-- Lightbox -->
+            <!-- Upload Alanı -->
             <div class="upload-wrapper">
                 <div class="upload-header">
                     <h1>Yeni Anı Ekle</h1>
                 </div>
 
-                <!-- Yükleme Alanı -->
                 <div class="upload-box" @click="$refs.fileInput.click()">
                     <input
                         type="file"
-                        accept="image/*"
+                        accept="image/*,video/*"
                         class="hidden"
                         ref="fileInput"
-                        @change="handleImageUpload"
+                        @change="handleFileUpload"
                     />
 
                     <div v-if="!previewUrl" class="upload-placeholder">
-                        <p>📷 Görsel seç veya buraya sürükle</p>
-                        <span class="hint">PNG, JPG (max 5MB)</span>
+                        <p>📷 Görsel veya 🎥 Video seç / sürükle</p>
+                        <span class="hint">PNG, JPG, MP4, WebM (max 20MB)</span>
                     </div>
 
                     <div v-else class="preview">
-                        <img :src="previewUrl" class="preview-img"/>
-                        <button type="button" @click.stop="removeImage" class="remove-btn">✕</button>
+                        <!-- Video önizleme -->
+                        <video
+                            v-if="isVideo"
+                            :src="previewUrl"
+                            class="preview-img"
+                            controls
+                        ></video>
+
+                        <!-- Resim önizleme -->
+                        <img
+                            v-else
+                            :src="previewUrl"
+                            class="preview-img"
+                        />
+
+                        <button type="button" @click.stop="removeFile" class="remove-btn">✕</button>
                     </div>
                 </div>
 
-                <!-- Açıklama -->
                 <textarea
                     v-model="form.description"
                     rows="3"
-                    placeholder="Bu görselin hikayesini yaz..."
+                    placeholder="Bu anının hikayesini yaz..."
                     class="description"
                 ></textarea>
 
-                <!-- Gönder Butonu -->
                 <button @click="submitForm" :disabled="isLoading" class="submit-btn">
                     {{ isLoading ? "Kaydediliyor..." : "Galeriye Ekle" }}
                 </button>
             </div>
         </div>
+
+        <!-- Alt Menü -->
         <div
             class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-300 dark:bg-gray-900 dark:border-gray-700 flex justify-around py-8 z-50"
         >
@@ -96,55 +120,84 @@
 </template>
 
 <script setup>
-import {ref} from "vue";
+import { ref } from "vue";
 import axios from "axios";
-import {Link} from "@inertiajs/vue3";
+import { Link } from "@inertiajs/vue3";
 import { toast } from "vue3-toastify";
 
-const form = ref({description: "", image: null});
+/* ----- STATE ----- */
+const form = ref({ description: "", file: null });
 const previewUrl = ref(null);
+const isVideo = ref(false);
 const isLoading = ref(false);
 
-const handleImageUpload = (e) => {
+const hoverIndex = ref(null);
+// sortedImages ve openLightbox veritabanı/props'tan geliyor varsayımı
+const sortedImages = ref([]); // backend'den doldurulmalı
+
+/* ----- FILE UPLOAD ----- */
+const handleFileUpload = (e) => {
     const file = e.target.files[0];
     if (!file) return;
 
-    form.value.image = file;
+    const type = file.type;
+
+    if (!type.startsWith("image/") && !type.startsWith("video/")) {
+        toast("Sadece resim veya video yükleyebilirsiniz.", { type: "error" });
+        return;
+    }
+
+    if (file.size > 20 * 1024 * 1024) {
+        toast("Dosya boyutu 20MB'den büyük olamaz.", { type: "error" });
+        return;
+    }
+
+    form.value.file = file;
+    isVideo.value = type.startsWith("video/");
     previewUrl.value = URL.createObjectURL(file);
 };
 
-const removeImage = () => {
-    form.value.image = null;
+const removeFile = () => {
+    form.value.file = null;
     previewUrl.value = null;
+    isVideo.value = false;
 };
 
+/* ----- FORM SUBMIT ----- */
 const submitForm = async () => {
+    if (!form.value.file) {
+        toast("Lütfen bir görsel veya video seçin.", { type: "warning" });
+        return;
+    }
+
     const fd = new FormData();
     fd.append("description", form.value.description);
-    if (form.value.image) fd.append("file", form.value.image);
+    fd.append("file", form.value.file);
 
     isLoading.value = true;
     try {
         await axios.post("/create-photo", fd, {
-            headers: {"Content-Type": "multipart/form-data"},
+            headers: { "Content-Type": "multipart/form-data" },
         });
 
-        toast("Görsel Yüklendi...", {
-            theme: "auto",
-            type: "success",
-            dangerouslyHTMLString: true
-        });
+        toast("Dosya başarıyla yüklendi 🎉", { theme: "auto", type: "success" });
 
-        // ✅ Formu temizle
-        form.value = { description: "", image: null };
+        // Formu temizle
+        form.value = { description: "", file: null };
         previewUrl.value = null;
-
-    } catch (e) {
-        console.log({ err: e });
+        isVideo.value = false;
+    } catch (err) {
+        console.error(err);
+        toast("Yükleme sırasında bir hata oluştu.", { type: "error" });
     } finally {
         isLoading.value = false;
     }
-}
+};
+
+/* ----- LIGHTBOX (Varsayımsal) ----- */
+const openLightbox = (index) => {
+    // Burada lightbox açma işlemini gerçekleştirebilirsiniz
+};
 </script>
 
 <style scoped>
@@ -156,7 +209,6 @@ const submitForm = async () => {
     background: radial-gradient(circle at 20% 30%, rgba(255, 110, 196, 0.2), transparent 70%),
     radial-gradient(circle at 80% 70%, rgba(120, 115, 245, 0.2), transparent 70%),
     linear-gradient(135deg, #1a001f, #2a002a, #1a001f);
-    background-size: cover;
 }
 
 /* BAŞLIK & LOGO */
@@ -197,7 +249,6 @@ const submitForm = async () => {
     background-size: cover;
     background-position: center;
     cursor: pointer;
-    backdrop-filter: blur(10px);
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
     overflow: hidden;
     transition: transform 0.4s ease, box-shadow 0.4s ease, border-radius 0.4s ease;
@@ -210,39 +261,15 @@ const submitForm = async () => {
     0 0 25px rgba(120, 115, 245, 0.5);
 }
 
-.gallery-item.hovered {
-    transform: scale(1.1) rotate(-5deg);
-    border-radius: 50%;
-    box-shadow: 0 20px 40px rgba(255, 105, 180, 0.6),
-    0 0 30px rgba(120, 115, 245, 0.5);
-    border-image: conic-gradient(from 0deg, #ff6ec4, #ffafbd, #7873f5, #ff6ec4) 1;
-    animation: rotate-border 3s linear infinite;
-}
-
-@keyframes rotate-border {
-    from {
-        border-image: conic-gradient(from 0deg, #ff6ec4, #ffafbd, #7873f5, #ff6ec4) 1;
-    }
-    to {
-        border-image: conic-gradient(from 360deg, #ff6ec4, #ffafbd, #7873f5, #ff6ec4) 1;
-    }
-}
-
-.gallery-item::after {
-    content: "";
+.video-thumb {
     position: absolute;
     inset: 0;
-    border-radius: inherit;
-    background: linear-gradient(to top, rgba(0, 0, 0, 0.6), transparent 60%);
-    transition: opacity 0.3s ease;
-    opacity: 0.5;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
 }
 
-.gallery-item:hover::after {
-    opacity: 0.8;
-}
-
-/* Overlay: açıklama ve tarih */
+/* Overlay */
 .info-overlay {
     position: absolute;
     bottom: 10px;
@@ -252,7 +279,6 @@ const submitForm = async () => {
     padding: 8px 12px;
     border-radius: 12px;
     font-size: 14px;
-    text-align: left;
 }
 
 .info-overlay .title {
@@ -261,146 +287,11 @@ const submitForm = async () => {
 }
 
 .info-overlay .date {
-    font-weight: 400;
     font-size: 12px;
     color: #ffafbd;
 }
 
-/* LIGHTBOX */
-.lightbox {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: radial-gradient(circle at center, rgba(255, 110, 196, 0.25), rgba(10, 0, 30, 0.95));
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 999;
-    flex-direction: column;
-    overflow: hidden;
-}
-
-/* RANDOM SHAPES */
-.shapes {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    overflow: hidden;
-    z-index: 0;
-    pointer-events: none;
-}
-
-.shape {
-    position: absolute;
-    display: block;
-    width: 8px;
-    height: 8px;
-    background: #ff6ec4;
-    border-radius: 50%;
-    opacity: 0.6;
-    animation: floatShape linear infinite;
-}
-
-.shape:nth-child(3n) {
-    background: #ffafbd;
-    width: 12px;
-    height: 12px;
-    border-radius: 50%;
-}
-
-.shape:nth-child(4n) {
-    background: #7873f5;
-    width: 10px;
-    height: 10px;
-    border-radius: 0;
-}
-
-.shape:nth-child(5n) {
-    background: #ffffff;
-    width: 14px;
-    height: 14px;
-    clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
-}
-
-.shape:nth-child(n) {
-    top: calc(var(--randY, 50) * 1%);
-    left: calc(var(--randX, 50) * 1%);
-}
-
-@keyframes floatShape {
-    0% {
-        transform: translateY(0) scale(0.8);
-        opacity: 0.7;
-    }
-    50% {
-        opacity: 1;
-    }
-    100% {
-        transform: translateY(-200vh) scale(1.2);
-        opacity: 0;
-    }
-}
-
-.lightbox-img {
-    max-width: 90%;
-    max-height: 80%;
-    border-radius: 20px;
-    box-shadow: 0 0 30px rgba(255, 110, 196, 0.7);
-    z-index: 1;
-}
-
-.animate-in {
-    animation: zoomIn 0.6s ease forwards;
-}
-
-@keyframes zoomIn {
-    from {
-        transform: scale(0.7) rotate(-3deg);
-        opacity: 0;
-    }
-    to {
-        transform: scale(1) rotate(0deg);
-        opacity: 1;
-    }
-}
-
-.lightbox-controls {
-    display: flex;
-    justify-content: space-between;
-    width: 120px;
-    margin-top: 20px;
-    z-index: 1;
-}
-
-.lightbox-controls button {
-    font-size: 30px;
-    background: none;
-    border: none;
-    color: #ffafbd;
-    cursor: pointer;
-    transition: transform 0.2s ease, color 0.3s ease;
-}
-
-.lightbox-controls button:hover {
-    transform: scale(1.2);
-    color: #fff;
-}
-
-.close-btn {
-    position: absolute;
-    top: 30px;
-    right: 50px;
-    font-size: 50px;
-    color: #ff6ec4;
-    cursor: pointer;
-    text-shadow: 0 0 15px rgba(255, 110, 196, 0.9);
-    z-index: 2;
-}
-
+/* UPLOAD FORM */
 .upload-wrapper {
     max-width: 600px;
     margin: 50px auto;
@@ -410,13 +301,6 @@ const submitForm = async () => {
     radial-gradient(circle at 80% 70%, rgba(120, 115, 245, 0.1), transparent 70%),
     linear-gradient(135deg, #1a001f, #2a002a, #1a001f);
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-}
-
-.upload-header {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-    margin-bottom: 25px;
 }
 
 .upload-header h1 {
@@ -460,6 +344,8 @@ const submitForm = async () => {
     max-height: 200px;
     border-radius: 15px;
     box-shadow: 0 0 20px rgba(255, 110, 196, 0.7);
+    width: 100%;
+    object-fit: contain;
 }
 
 .remove-btn {
@@ -485,12 +371,6 @@ const submitForm = async () => {
     background: rgba(0, 0, 0, 0.4);
     color: #fff;
     resize: none;
-}
-
-.description:focus {
-    outline: none;
-    border-color: #ffafbd;
-    box-shadow: 0 0 15px rgba(255, 110, 196, 0.6);
 }
 
 .submit-btn {

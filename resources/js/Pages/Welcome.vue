@@ -10,22 +10,45 @@
         <!-- Galeri -->
         <ul class="gallery-container">
             <li v-for="item in sortedImages" :key="item.id" class="gallery-item">
-                <div class="image-wrapper" @dblclick="likeItem(item)">
-                    <img :src="getImageUrl(item.image)" alt="Post Image" class="image" @click="openLightbox(item)"/>
+                <div class="media-wrapper" @dblclick="likeItem(item)">
+                    <!-- ✅ type kontrolü -->
+                    <template v-if="item.type === 'video'">
+                        <video
+                            class="media"
+                            :src="getVideoUrl(item.image)"
+                            controls
+                            @click.stop="openLightbox(item)"
+                        ></video>
+                    </template>
+                    <template v-else>
+                        <img
+                            class="media"
+                            :src="getImageUrl(item.image)"
+                            alt="Z&P "
+                            @click="openLightbox(item)"
+                        />
+                    </template>
+
                     <transition-group name="heart" tag="div">
-                        <span v-for="(h, idx) in item.hearts" :key="h.id" class="floating-heart">❤️</span>
+                        <span v-for="h in item.hearts" :key="h.id" class="floating-heart">❤️</span>
                     </transition-group>
                 </div>
 
                 <div class="post-footer">
                     <p class="desc-text font-bold">
                         {{ truncatedText(item) }}
-                        <button v-if="item.description.length > 100" @click.stop="toggleExpand(item)" class="more-btn">
+                        <button
+                            v-if="item.description && item.description.length > 100"
+                            @click.stop="toggleExpand(item)"
+                            class="more-btn"
+                        >
                             {{ item.expanded ? 'Daha Az' : 'Daha Fazla' }}
                         </button>
                     </p>
                     <div class="meta font-bold">
-                        <span class="likes" @click.stop="likeItem(item)">{{ item.liked }} ❤️</span>
+                        <span class="likes" @click.stop="likeItem(item)">
+                            {{ item.liked }} ❤️
+                        </span>
                         <span class="date">{{ formatDate(item.created_at) }}</span>
                     </div>
                 </div>
@@ -36,16 +59,30 @@
         <div v-if="lightboxOpen" class="lightbox" @click.self="closeLightbox">
             <span class="close-btn" @click="closeLightbox">&times;</span>
             <div class="holo-bg">
-        <span v-for="n in 50" :key="n" class="holo-shape"
-              :style="{
-                top: Math.random()*100+'%',
-                left: Math.random()*100+'%',
-                animationDelay: Math.random()*5+'s',
-                animationDuration: (5+Math.random()*10)+'s'
-              }"></span>
+                <span v-for="n in 50" :key="n" class="holo-shape"
+                      :style="{
+                        top: Math.random()*100+'%',
+                        left: Math.random()*100+'%',
+                        animationDelay: Math.random()*5+'s',
+                        animationDuration: (5+Math.random()*10)+'s'
+                      }"></span>
             </div>
             <div class="lightbox-inner">
-                <img :src="getImageUrl(currentItem.image)" class="lightbox-img animate-in"/>
+                <!-- ✅ Lightbox type kontrolü -->
+                <template v-if="currentItem?.type === 'video'">
+                    <video
+                        :src="getVideoUrl(currentItem.image)"
+                        class="lightbox-media animate-in"
+                        controls
+                        autoplay
+                    ></video>
+                </template>
+                <template v-else>
+                    <img
+                        :src="getImageUrl(currentItem.image)"
+                        class="lightbox-media animate-in"
+                    />
+                </template>
             </div>
         </div>
 
@@ -107,8 +144,9 @@ const sortedImages = computed(() =>
 );
 
 function truncatedText(item) {
-    if(item.expanded || item.description.length <= 100) return item.description;
-    return item.description.substring(0,100) + '...';
+    const text = item.description || '';
+    if (item.expanded || text.length <= 100) return text;
+    return text.substring(0, 100) + '...';
 }
 function toggleExpand(item) { item.expanded = !item.expanded; }
 
@@ -126,9 +164,18 @@ function likeItem(item) {
         .catch(err => { console.error("Beğeni gönderilemedi:", err); item.liked -= 1; });
 }
 
-function formatDate(date) { return new Date(date).toLocaleDateString("tr-TR", { year:"numeric", month:"long", day:"numeric" }); }
+function formatDate(date) {
+    return new Date(date).toLocaleDateString("tr-TR", { year:"numeric", month:"long", day:"numeric" });
+}
 
-function getImageUrl(image) { if(!image) return '/public/images/placeholder.png'; return `/storage/${image}`; }
+function getImageUrl(path) {
+    if(!path) return '/public/images/placeholder.png';
+    return `/storage/${path}`;
+}
+function getVideoUrl(path) {
+    if(!path) return '/public/images/placeholder.png';
+    return `/storage/${path}`;
+}
 </script>
 
 <style scoped>
@@ -138,10 +185,9 @@ function getImageUrl(image) { if(!image) return '/public/images/placeholder.png'
     min-height:100vh;
     padding:25px;
     font-family: 'Quicksand', sans-serif;
-    background: linear-gradient(135deg,#d084e2,#f78acb,#a261d9);
+    background: linear-gradient(135deg, #2b0d3e, #6f2fa0, #b742c2); /* örnek tonlar */
 }
 
-/* Header */
 .gallery-header { display:flex; align-items:center; gap:15px; margin-bottom:25px; }
 .logo{width:50px;height:50px;object-fit:contain;}
 .gallery-header h1{
@@ -151,43 +197,130 @@ function getImageUrl(image) { if(!image) return '/public/images/placeholder.png'
     text-shadow:0 0 15px rgba(255,255,255,0.4);
 }
 
-/* Grid */
-.gallery-container { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:18px; list-style:none; margin:0; padding:0; }
-.gallery-item { display:flex; flex-direction:column; border-radius:16px; overflow:hidden; cursor:pointer; background:rgba(255,255,255,0.05); backdrop-filter:blur(6px); transition:0.3s; }
-.gallery-item:hover { transform:scale(1.03); }
+.gallery-container {
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+    gap:18px;
+    list-style:none;
+    margin:0;
+    padding:0;
+}
+.gallery-item {
+    display:flex;
+    flex-direction:column;
+    border-radius:16px;
+    overflow:hidden;
+    cursor:pointer;
+    background: rgba(255,255,255,0.05); /* daha koyu */
+    border: 2px solid rgba(255,73,209,0.4); /* neon kenar */
+    backdrop-filter:blur(6px);
+    transition:0.3s;
+}
+.gallery-item:hover { transform: scale(1.04); filter: brightness(1.15); }
 
-/* Resim */
-.image-wrapper { position:relative; overflow:hidden; border-radius:16px 16px 0 0; }
-.image { width:100%; display:block; object-fit:cover; transition: all 0.5s ease; border-radius:16px 16px 0 0; }
-.image-wrapper:hover .image { transform:scale(1.07); filter:brightness(1.1); }
+.media-wrapper { position:relative; overflow:hidden; border-radius:16px 16px 0 0; }
+.media {
+    width:100%;
+    display:block;
+    object-fit:cover;
+    transition: all 0.5s ease;
+    border-radius:16px 16px 0 0;
+}
+.media-wrapper:hover .media { transform:scale(1.05); filter:brightness(1.1); }
 
-/* Heart anim */
-.floating-heart { position:absolute; left:50%; top:50%; transform:translate(-50%,-50%) scale(1); font-size:28px; text-shadow:0 0 12px #ff9ce3,0 0 18px #d761f7; animation:heart-float 1.2s ease-out forwards; pointer-events:none; }
-@keyframes heart-float { 0%{transform:translate(-50%,-50%) scale(1);opacity:1;}50%{transform:translate(-50%,-160%) scale(1.4);opacity:1;}100%{transform:translate(-50%,-280%) scale(1.8);opacity:0;} }
+.floating-heart {
+    position:absolute;
+    left:50%;
+    top:50%;
+    transform:translate(-50%,-50%) scale(1);
+    font-size:28px;
+    text-shadow:0 0 12px #ff9ce3,0 0 18px #d761f7;
+    animation:heart-float 1.2s ease-out forwards;
+    pointer-events:none;
+}
+@keyframes heart-float {
+    0%{transform:translate(-50%,-50%) scale(1);opacity:1;}
+    50%{transform:translate(-50%,-160%) scale(1.4);opacity:1;}
+    100%{transform:translate(-50%,-280%) scale(1.8);opacity:0;}
+}
 
-/* Footer */
-.post-footer { background: rgba(255,255,255,0.1); backdrop-filter: blur(8px); padding:8px 10px; border-radius:0 0 16px 16px; font-size:13px; color:#fff; }
+.post-footer {
+    background: rgba(255,255,255,0.12);
+    backdrop-filter: blur(8px);
+    padding:8px 10px;
+    border-radius:0 0 16px 16px;
+    font-size:13px;
+    color:#fff;
+}
 .desc-text{margin-bottom:4px; line-height:1.4;}
-.more-btn{background:none; border:none; color:#ffe0f3; cursor:pointer; font-size:12px; font-weight:bold;}
+.more-btn{background:none; border:none; color:#ff49d1; cursor:pointer; font-size:12px; font-weight:bold;}
 .meta{display:flex; justify-content:space-between; font-size:12px; color:#eee;}
 .likes{font-weight:bold; cursor:pointer; color:#ff87c9; transition: all 0.3s ease;}
 .likes:hover{transform:scale(1.2);}
 
-/* Lightbox */
-.lightbox { position:fixed; inset:0; display:flex; justify-content:center; align-items:center; z-index:999; overflow:auto; background:rgba(0,0,0,0.92); padding:20px; }
+.lightbox {
+    position:fixed; inset:0;
+    display:flex; justify-content:center; align-items:center;
+    z-index:999; overflow:auto;
+    background:rgba(0,0,0,0.92);
+    padding:20px;
+}
 .lightbox-inner { display:flex; justify-content:center; align-items:center; }
-.lightbox-img { max-width:95vw; max-height:95vh; border-radius:24px; border:3px solid #f78acb; box-shadow:0 0 60px rgba(247,138,203,0.8); transition: transform 0.4s ease; animation:popIn 0.6s ease forwards; }
-@keyframes popIn { 0%{transform:scale(0) rotate(0deg);opacity:0;}50%{transform:scale(1.2) rotate(180deg);opacity:1;}100%{transform:scale(1) rotate(360deg);opacity:1;} }
-.close-btn { position:absolute; top:20px; right:30px; font-size:50px; color:#f78acb; cursor:pointer; z-index:10; }
+.lightbox-media {
+    max-width:95vw;
+    max-height:95vh;
+    border-radius:24px;
+    border:3px solid #f78acb;
+    box-shadow:0 0 60px rgba(247,138,203,0.8);
+    transition: transform 0.4s ease;
+    animation:popIn 0.6s ease forwards;
+}
+@keyframes popIn {
+    0%{transform:scale(0) rotate(0deg);opacity:0;}
+    50%{transform:scale(1.2) rotate(180deg);opacity:1;}
+    100%{transform:scale(1) rotate(360deg);opacity:1;}
+}
+.close-btn {
+    position:absolute;
+    top:20px;
+    right:30px;
+    font-size:50px;
+    color:#f78acb;
+    cursor:pointer;
+    z-index:10;
+}
 
-/* Holo bg */
 .holo-bg { position:absolute; inset:0; overflow:hidden; z-index:0; }
-.holo-shape { position:absolute; display:block; width:12px; height:12px; border-radius:50%; background: radial-gradient(circle, #ff9ce3, #d761f7, #a261d9); opacity:0.6; animation:floatHolo linear infinite; }
-@keyframes floatHolo { 0%{transform:translateY(0) scale(0.8);opacity:0.6;}100%{transform:translateY(-200vh) scale(1.2);opacity:0;} }
+.holo-shape {
+    position:absolute;
+    display:block;
+    width:12px;
+    height:12px;
+    border-radius:50%;
+    background: radial-gradient(circle, #ff9ce3, #d761f7, #a261d9);
+    opacity:0.6;
+    animation:floatHolo linear infinite;
+}
+@keyframes floatHolo {
+    0%{transform:translateY(0) scale(0.8);opacity:0.6;}
+    100%{transform:translateY(-200vh) scale(1.2);opacity:0;}
+}
 
-/* Alt navigasyon */
 .nav-bg { background: linear-gradient(90deg,#f78acb,#d761f7); }
-.nav-center-btn { background: #fff; color: #f78acb; border:none; width:56px; height:56px; border-radius:50%; display:flex; justify-content:center; align-items:center; cursor:pointer; box-shadow:0 6px 16px rgba(247,138,203,0.5); transition:0.3s; }
+.nav-center-btn {
+    background: #ff49d1;
+    color: #fff;
+    border:none;
+    width:56px;
+    height:56px;
+    border-radius:50%;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    cursor:pointer;
+    box-shadow: 0 8px 20px rgba(255, 73, 209, 0.5);
+    transition:0.3s;
+}
 .nav-center-btn:hover { transform:scale(1.1); }
 .nav-center-btn svg { width:24px; height:24px; }
 </style>
