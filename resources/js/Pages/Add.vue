@@ -99,7 +99,7 @@
 
         <!-- Alt Menü -->
         <div
-            class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-300 dark:bg-gray-900 dark:border-gray-700 flex justify-around py-8 z-50"
+            class="fixed bottom-0 left-0 right-0  border-t bg-gray-900 border-gray-700 flex justify-around py-8 z-50"
         >
             <Link
                 :href="route('welcome')"
