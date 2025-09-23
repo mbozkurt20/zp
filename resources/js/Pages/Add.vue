@@ -183,7 +183,7 @@ const submitForm = async () => {
         isVideo.value = false;
     } catch (err) {
         console.error(err);
-        toast("Yükleme sırasında bir hata oluştu.", { type: "error" });
+        toast(err, { type: "error" });
     } finally {
         isLoading.value = false;
     }
