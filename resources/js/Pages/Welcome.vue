@@ -35,17 +35,7 @@
                 </div>
 
                 <div class="post-footer">
-                    <p class="desc-text font-bold">
-                        {{ truncatedText(item) }}
-                        <button
-                            v-if="item.description && item.description.length > 100"
-                            @click.stop="toggleExpand(item)"
-                            class="more-btn"
-                        >
-                            {{ item.expanded ? 'Daha Az' : 'Daha Fazla' }}
-                        </button>
-                    </p>
-                    <div class="meta font-bold">
+                    <div class="meta font-bold mb-2">
                         <span class="likes" @click.stop="likeItem(item)">
                             {{ item.liked }} ❤️
                         </span>
